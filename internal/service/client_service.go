@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/repository"
@@ -37,11 +38,7 @@ func (c *ClientService) CreateClient(ctx context.Context) error {
 }
 
 func (c *ClientService) DeleteClient(ctx context.Context) error {
-	id := utils.InputInt("ID of the client")
-
-	if id <= 0 {
-		return errors.New(errors.ErrCodeValidation, "invalid client id")
-	}
+	id := utils.InputId("ID of the client")
 
 	client, err := c.clientRepo.GetClientByID(ctx, id)
 	if err != nil {
@@ -65,7 +62,40 @@ func (c *ClientService) DeleteClient(ctx context.Context) error {
 		return err
 	}
 
-	log.Printf("Client %s %s with ID: %d deleted successfully",
+	log.Printf("Client %s %s with ID: %d deleted successfully \n",
 		client.FirstName, client.LastName, id)
 	return nil
+}
+
+func (c *ClientService) GetClients(ctx context.Context) error {
+	clients, err := c.clientRepo.GetClients(ctx)
+	if err != nil {
+		return err
+	}
+
+	c.showClients(clients)
+
+	return nil
+}
+
+func (c *ClientService) showClients(clients []model.Client) {
+	if len(clients) == 0 {
+		fmt.Println("No clients found")
+		return
+	}
+
+	fmt.Printf("%-4s %-15s %-15s %-15s %-25s %-12s\n",
+		"ID", "First Name", "Last Name", "Phone", "Social Network", "Created")
+	fmt.Println(strings.Repeat("-", 90))
+
+	for _, client := range clients {
+		fmt.Printf("%-4d %-15s %-15s %-15s %-25s %-12s\n",
+			client.Id,
+			client.FirstName,
+			client.LastName,
+			client.Phone,
+			client.SocialNetworkUrl,
+			client.CreatedAt.Format("02.01.2006"),
+		)
+	}
 }

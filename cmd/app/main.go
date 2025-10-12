@@ -57,11 +57,20 @@ func main() {
 				fmt.Printf("Error creating shoot: %v\n", err)
 			}
 		case "4":
-			// TODO:
+			err := shootService.DeleteShoot(ctx)
+			if err != nil {
+				fmt.Printf("Error deleting shoot: %v\n", err)
+			}
 		case "5":
-			// TODO:
+			err := clientService.GetClients(ctx)
+			if err != nil {
+				fmt.Printf("Error getting clients: %v\n", err)
+			}
 		case "6":
-			// TODO:
+			err := shootService.GetShoots(ctx)
+			if err != nil {
+				fmt.Printf("Error getting shoots: %v\n", err)
+			}
 		case "7":
 			fmt.Println("Goodbye!")
 			return

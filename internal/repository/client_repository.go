@@ -74,3 +74,35 @@ WHERE id = $1`
 
 	return &client, nil
 }
+
+func (repo *ClientRepository) GetClients(ctx context.Context) ([]model.Client, error) {
+	query := `
+SELECT id, first_name, last_name, phone, social_network_url, created_at
+FROM clients`
+
+	rows, err := repo.db.Pool.Query(ctx, query)
+	if err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get clients")
+	}
+
+	defer rows.Close()
+
+	var clients []model.Client
+
+	for rows.Next() {
+		var client model.Client
+		err := rows.Scan(
+			&client.Id, &client.FirstName, &client.LastName,
+			&client.Phone, &client.SocialNetworkUrl, &client.CreatedAt)
+		if err != nil {
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get client")
+		}
+		clients = append(clients, client)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "error during rows iteration")
+	}
+
+	return clients, nil
+}
