@@ -7,7 +7,8 @@ CREATE TABLE shoots
     end_time TIME,
     shoot_price DECIMAL(10,0),
     location VARCHAR(255),
-    client_name VARCHAR(255),
+    client_first_name VARCHAR(255),
+    client_last_name VARCHAR(255),
     shoot_type VARCHAR(100),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

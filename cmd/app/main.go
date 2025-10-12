@@ -29,6 +29,8 @@ func main() {
 
 	clientRepo := repository.NewClientRepository(db)
 	clientService := service.NewClientService(clientRepo)
+	shootRepo := repository.NewShootRepository(db)
+	shootService := service.NewShootService(shootRepo)
 
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -50,7 +52,10 @@ func main() {
 				fmt.Printf("Error deleting client: %v\n", err)
 			}
 		case "3":
-			// TODO:
+			err := shootService.CreateShoot(ctx)
+			if err != nil {
+				fmt.Printf("Error creating shoot: %v\n", err)
+			}
 		case "4":
 			// TODO:
 		case "5":
