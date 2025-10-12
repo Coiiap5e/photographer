@@ -1,10 +1,10 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
 
+	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/joho/godotenv"
 )
 
@@ -16,21 +16,58 @@ type DbConfig struct {
 	Database string `json:"database"`
 }
 
-func LoadDBConfig() DbConfig {
+func LoadDBConfig() (DbConfig, error) {
 	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file")
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "failed to load .env file",
+		)
 	}
 
-	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
+	if os.Getenv("APP_DB_HOST") == "" {
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "APP_DB_HOST is required",
+		)
+	}
+
+	port, err := strconv.Atoi(os.Getenv("APP_DB_PORT"))
 	if err != nil {
-		log.Fatal("APP_DB_PORT must be an integer")
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "APP_DB_PORT must be an integer",
+		)
+	}
+
+	//Checking required fields
+
+	if os.Getenv("APP_DB_USER") == "" {
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "APP_DB_USER is required",
+		)
+	}
+
+	if os.Getenv("APP_DB_PASS") == "" {
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "APP_DB_PASS is required",
+		)
+	}
+
+	if os.Getenv("APP_DB_NAME") == "" {
+		return DbConfig{}, errors.New(
+			errors.ErrCodeConfig, "APP_DB_NAME is required",
+		)
 	}
 
 	return DbConfig{
-		Host:     os.Getenv("APP_DB_HOST"),
+		Host:     getEnv("APP_DB_HOST", "localhost"),
 		Port:     port,
 		Username: os.Getenv("APP_DB_USER"),
 		Password: os.Getenv("APP_DB_PASS"),
 		Database: os.Getenv("APP_DB_NAME"),
+	}, nil
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
 	}
+	return defaultValue
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Coiiap5e/photographer/config"
+	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,14 +24,16 @@ func NewClient(ctx context.Context, db config.DbConfig) (*DB, error) {
 func newFromConnStr(ctx context.Context, connStr string) (*DB, error) {
 	pool, err := pgxpool.New(ctx, connStr)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to database: %w", err)
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
+			"Failed to connect to database")
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("error pinging database: %w", err)
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
+			"error pinging database")
 	}
 
 	return &DB{Pool: pool}, nil
