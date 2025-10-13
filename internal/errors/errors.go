@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type ErrorCode string
 
@@ -56,4 +59,12 @@ func New(code ErrorCode, message string) *AppError {
 
 func Wrap(err error, code ErrorCode, message string) *AppError {
 	return &AppError{Code: code, Message: message, Err: err}
+}
+
+func IsErrorCode(err error, code ErrorCode) bool {
+	var appErr *AppError
+	if errors.As(err, &appErr) {
+		return appErr.Code == code
+	}
+	return false
 }

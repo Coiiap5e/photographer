@@ -13,6 +13,7 @@ services:
       POSTGRES_DB: photographer
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./internal/migration:/migrations
 
 volumes:
   postgres_data:

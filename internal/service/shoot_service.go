@@ -13,25 +13,48 @@ import (
 )
 
 type ShootService struct {
-	shootRepo *repository.ShootRepository
+	shootRepo  *repository.ShootRepository
+	clientRepo *repository.ClientRepository
 }
 
-func NewShootService(shootRepo *repository.ShootRepository) *ShootService {
-	return &ShootService{shootRepo: shootRepo}
+func NewShootService(shootRepo *repository.ShootRepository, clientRepo *repository.ClientRepository) *ShootService {
+	return &ShootService{
+		shootRepo:  shootRepo,
+		clientRepo: clientRepo,
+	}
 }
 
 func (s *ShootService) CreateShoot(ctx context.Context) error {
+	var clientId int
+	var clientFirstName, clientLastName string
+
 	shootDate, startTime, endTime := utils.InputShootDate()
 
+	for {
+		client, err := s.clientRepo.GetClientByID(ctx, utils.InputId("Client_id"))
+		if err != nil {
+			if errors.IsErrorCode(err, errors.ErrCodeClientNotFound) {
+				fmt.Println("Client not found. Try again")
+				continue
+			} else {
+				return err
+			}
+		}
+		clientId = client.Id
+		clientFirstName = client.FirstName
+		clientLastName = client.LastName
+		break
+	}
+
 	shoot := &model.Shoot{
-		ClientId:        utils.InputId("Client_id"),
+		ClientId:        clientId,
 		ShootDate:       shootDate,
 		StartTime:       startTime,
 		EndTime:         endTime,
 		ShootPrice:      utils.InputInt("Shoot price"),
 		ShootLocation:   utils.InputStringRequired("Location"),
-		ClientFirstName: utils.InputStringRequired("Client first name"),
-		ClientLastName:  utils.InputStringRequired("Client last name"),
+		ClientFirstName: clientFirstName,
+		ClientLastName:  clientLastName,
 		ShootType:       utils.InputStringRequired("Shoot type"),
 		Notes:           utils.InputString("Notes"),
 	}
@@ -99,14 +122,14 @@ func (s *ShootService) showShoots(shoots []model.Shoot) {
 		return
 	}
 
-	fmt.Printf("%-3s %-9s %-10s %-8s %-8s %-6s %-12s %-12s %-12s %-10s %-15s %-10s\n",
+	fmt.Printf("%-3s %-9s %-10s %-8s %-8s %-6s %-25s %-12s %-12s %-10s %-25s %-10s\n",
 		"ID", "Client ID", "Date", "Start", "End", "Price", "Location",
 		"First name", "Last name", "Type", "Notes", "Created")
 
-	fmt.Println(strings.Repeat("-", 125))
+	fmt.Println(strings.Repeat("-", 148))
 
 	for _, shoot := range shoots {
-		fmt.Printf("%-3d %-9d %-10s %-8s %-8s %-6d %-12s %-12s %-12s %-10s %-15s %-10s\n",
+		fmt.Printf("%-3d %-9d %-10s %-8s %-8s %-6d %-25s %-12s %-12s %-10s %-25s %-10s\n",
 			shoot.Id,
 			shoot.ClientId,
 			shoot.ShootDate.Format("02.01.2006"),

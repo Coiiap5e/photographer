@@ -84,12 +84,12 @@ func (c *ClientService) showClients(clients []model.Client) {
 		return
 	}
 
-	fmt.Printf("%-4s %-15s %-15s %-15s %-25s %-12s\n",
+	fmt.Printf("%-4s %-15s %-15s %-20s %-25s %-12s\n",
 		"ID", "First Name", "Last Name", "Phone", "Social Network", "Created")
-	fmt.Println(strings.Repeat("-", 90))
+	fmt.Println(strings.Repeat("-", 95))
 
 	for _, client := range clients {
-		fmt.Printf("%-4d %-15s %-15s %-15s %-25s %-12s\n",
+		fmt.Printf("%-4d %-15s %-15s %-20s %-25s %-12s\n",
 			client.Id,
 			client.FirstName,
 			client.LastName,
