@@ -3,7 +3,7 @@ TARGET_DIR =  bin # имя папки для бинарников
 SRC_MAIN = main.go # имя файла с главной функцией
 .DEFAULT_GOAL := run
 
-.PHONY: build build-windows build-darwin build-linux run-darwin run-linux run-windows run clean info
+.PHONY: build build-windows build-darwin build-linux run-darwin run-linux run-windows run clean test info
 
 build:
 	go build -o $(TARGET_DIR)/$(BINARY_NAME) $(SRC_MAIN)
@@ -31,6 +31,9 @@ run-linux: build-linux
 
 clean:
 	rm -rf $(TARGET_DIR)
+
+test:
+	go test -race ./... -v
 
 info:
 	@echo "== Photographer's  optimization app =="
