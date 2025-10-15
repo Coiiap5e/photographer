@@ -36,3 +36,11 @@ func CreateTestShoot(clientID int) *model.Shoot {
 	}
 
 }
+
+func CreateTestShootWithOptions(clientID int, option ...func(shoot *model.Shoot)) *model.Shoot {
+	shoot := CreateTestShoot(clientID)
+	for _, opt := range option {
+		opt(shoot)
+	}
+	return shoot
+}

@@ -110,7 +110,7 @@ func (suite *ClientRepositoryTestSuit) TestDeleteClient() {
 
 		deletedClient, err := suite.repo.GetClientByID(suite.ctx, clientID)
 		suite.Error(err, "should return error when getting deleted client")
-		suite.Nil(deletedClient, "should return deleted client")
+		suite.Nil(deletedClient, "should not return deleted client")
 	})
 	suite.T().Run("should return error when deleting non-existent client", func(t *testing.T) {
 		// Given

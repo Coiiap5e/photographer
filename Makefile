@@ -68,6 +68,7 @@ info:
 	@echo " make run-linux - build project for linux and run"
 	@echo " make run-windows - build project for windows and run"
 	@echo " make clean - clean build"
+	@echo " make test - run tests"
 	@echo " make info - this info"
 	@echo " make - default command: run"
 	@echo ""
