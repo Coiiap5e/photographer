@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Coiiap5e/photographer/model"
+	model2 "github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/testutils"
 	"github.com/stretchr/testify/suite"
 )
@@ -19,8 +19,8 @@ type ShootRepositoryTestSuit struct {
 	suite.Suite
 	ctx        context.Context
 	db         *testutils.TestDB
-	repo       *ShootRepository
-	testClient *model.Client
+	repo       Shoot
+	testClient *model2.Client
 }
 
 func (suite *ShootRepositoryTestSuit) SetupSuite() {
@@ -33,14 +33,14 @@ func (suite *ShootRepositoryTestSuit) SetupSuite() {
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
 
-	suite.repo = NewShootRepository(suite.db.GetDB())
+	suite.repo = NewShoot(suite.db.GetDB())
 }
 
 func (suite *ShootRepositoryTestSuit) SetupTest() {
 	err := suite.db.CleanTables(suite.ctx)
 	suite.Require().NoError(err)
 
-	clientRepo := NewClientRepository(suite.db.GetDB())
+	clientRepo := NewClient(suite.db.GetDB())
 	testClient := testutils.CreateTestClient()
 	err = clientRepo.AddClient(suite.ctx, testClient)
 	suite.Require().NoError(err)
@@ -50,7 +50,7 @@ func (suite *ShootRepositoryTestSuit) SetupTest() {
 func (suite *ShootRepositoryTestSuit) TearDownSuite() {
 	if suite.db != nil {
 		if err := suite.db.Cleanup(suite.ctx); err != nil {
-			log.Fatalf("Failed to cleanup test database: %v", err)
+			log.Fatalf("failed to cleanup test database: %v", err)
 		}
 	}
 }
@@ -142,12 +142,12 @@ func (suite *ShootRepositoryTestSuit) TestDeleteShoot() {
 func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	// Given
 	testShoot1 := testutils.CreateTestShoot(suite.testClient.Id)
-	testShoot2 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model.Shoot) {
+	testShoot2 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model2.Shoot) {
 		shoot.ShootDate = time.Now().AddDate(0, 0, 10)
 		shoot.ShootLocation = "photo studio Aurora"
 		shoot.Notes = ""
 	})
-	testShoot3 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model.Shoot) {
+	testShoot3 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model2.Shoot) {
 		shoot.ShootDate = time.Now().AddDate(0, 0, 60)
 		shoot.ShootLocation = "beacon"
 		shoot.Notes = "blanket"
@@ -167,7 +167,7 @@ func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	suite.NoError(err, "should not return error")
 	suite.Len(allShoots, 3, "should return 3 shoots")
 
-	foundShoots := make(map[int]model.Shoot)
+	foundShoots := make(map[int]model2.Shoot)
 	for _, shoot := range allShoots {
 		foundShoots[shoot.Id] = shoot
 	}

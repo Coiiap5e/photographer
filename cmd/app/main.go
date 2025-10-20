@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/Coiiap5e/photographer/config"
 	cliapp "github.com/Coiiap5e/photographer/internal/app"
+	"github.com/Coiiap5e/photographer/internal/config"
 	"github.com/Coiiap5e/photographer/internal/database"
 	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/service"
@@ -18,9 +20,13 @@ func main() {
 	log.SetFlags(log.Ldate)
 	log.SetOutput(os.Stdout)
 
+	signalChan := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
 	dbConfig, err := config.LoadDBConfig()
 	if err != nil {
-		log.Fatal("Configuration error: ", err)
+		log.Fatal("configuration error: ", err)
 	}
 
 	db, err := database.NewClient(ctx, dbConfig)
@@ -29,11 +35,24 @@ func main() {
 	}
 	defer db.Close()
 
-	clientRepo := repository.NewClientRepository(db)
-	clientService := service.NewClientService(clientRepo)
-	shootRepo := repository.NewShootRepository(db)
-	shootService := service.NewShootService(shootRepo, clientRepo)
+	clientRepo := repository.NewClient(db)
+	shootRepo := repository.NewShoot(db)
+
+	clientService := service.NewClient(clientRepo)
+	shootService := service.NewShoot(shootRepo, clientRepo)
+
+	go func() {
+		sig := <-signalChan
+		log.Println("got signal:", sig)
+
+		done <- true
+	}()
 
 	app := cliapp.NewApp(clientService, shootService)
-	app.RunMenu(ctx)
+	go func() {
+		app.RunMenu(ctx)
+		done <- true
+	}()
+
+	<-done
 }

@@ -6,19 +6,26 @@ import (
 
 	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
-	"github.com/Coiiap5e/photographer/model"
+	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/jackc/pgx/v5"
 )
 
-type ClientRepository struct {
+type Client interface {
+	AddClient(ctx context.Context, client *model.Client) error
+	DeleteClient(ctx context.Context, id int) error
+	GetClientByID(ctx context.Context, id int) (*model.Client, error)
+	GetClients(ctx context.Context) ([]model.Client, error)
+}
+
+type postgresClient struct {
 	db *database.DB
 }
 
-func NewClientRepository(db *database.DB) *ClientRepository {
-	return &ClientRepository{db: db}
+func NewClient(db *database.DB) Client {
+	return &postgresClient{db: db}
 }
 
-func (repo *ClientRepository) AddClient(ctx context.Context, client *model.Client) error {
+func (repo *postgresClient) AddClient(ctx context.Context, client *model.Client) error {
 	query := `
 INSERT INTO clients 
     (first_name, last_name, phone, social_network_url) 
@@ -38,7 +45,7 @@ RETURNING
 	return nil
 }
 
-func (repo *ClientRepository) DeleteClient(ctx context.Context, id int) error {
+func (repo *postgresClient) DeleteClient(ctx context.Context, id int) error {
 	query := `
 DELETE FROM clients WHERE id = $1`
 
@@ -54,7 +61,7 @@ DELETE FROM clients WHERE id = $1`
 	return nil
 }
 
-func (repo *ClientRepository) GetClientByID(ctx context.Context, id int) (*model.Client, error) {
+func (repo *postgresClient) GetClientByID(ctx context.Context, id int) (*model.Client, error) {
 	query := `
 SELECT id, first_name, last_name, phone, social_network_url
 FROM clients
@@ -75,7 +82,7 @@ WHERE id = $1`
 	return &client, nil
 }
 
-func (repo *ClientRepository) GetClients(ctx context.Context) ([]model.Client, error) {
+func (repo *postgresClient) GetClients(ctx context.Context) ([]model.Client, error) {
 	query := `
 SELECT id, first_name, last_name, phone, social_network_url, created_at
 FROM clients`
@@ -87,7 +94,7 @@ FROM clients`
 
 	defer rows.Close()
 
-	var clients []model.Client
+	clients := make([]model.Client, 0)
 
 	for rows.Next() {
 		var client model.Client

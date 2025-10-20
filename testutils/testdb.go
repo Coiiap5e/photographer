@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Coiiap5e/photographer/internal/database"
+	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -82,7 +83,7 @@ func (tdb *TestDB) InitSchema(ctx context.Context) error {
 		)
 	`)
 	if err != nil {
-		return fmt.Errorf("failed to create clients table: %w", err)
+		return errors.Wrap(err, errors.ErrCodeClientCreate, "failed to create clients table")
 	}
 
 	_, err = tdb.Pool.Exec(ctx, `
@@ -102,7 +103,7 @@ func (tdb *TestDB) InitSchema(ctx context.Context) error {
 		)
 	`)
 	if err != nil {
-		return fmt.Errorf("failed to create shoots table: %w", err)
+		return errors.Wrap(err, errors.ErrCodeShootCreate, "failed to create shoots table")
 	}
 
 	return nil
@@ -126,7 +127,7 @@ func (tdb *TestDB) Cleanup(ctx context.Context) error {
 func (tdb *TestDB) CleanTables(ctx context.Context) error {
 	_, err := tdb.Pool.Exec(ctx, "TRUNCATE TABLE shoots, clients RESTART IDENTITY CASCADE")
 	if err != nil {
-		return fmt.Errorf("failed to clean tables: %w", err)
+		return errors.Wrap(err, errors.ErrCodeDBDelete, "failed to clean tables")
 	}
 	return nil
 }

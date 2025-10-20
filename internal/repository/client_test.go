@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/Coiiap5e/photographer/model"
+	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/testutils"
 	"github.com/stretchr/testify/suite"
 )
@@ -18,7 +18,7 @@ type ClientRepositoryTestSuit struct {
 	suite.Suite
 	ctx  context.Context
 	db   *testutils.TestDB
-	repo *ClientRepository
+	repo Client
 }
 
 func (suite *ClientRepositoryTestSuit) SetupSuite() {
@@ -31,7 +31,7 @@ func (suite *ClientRepositoryTestSuit) SetupSuite() {
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
 
-	suite.repo = NewClientRepository(suite.db.GetDB())
+	suite.repo = NewClient(suite.db.GetDB())
 }
 
 func (suite *ClientRepositoryTestSuit) SetupTest() {
@@ -42,7 +42,7 @@ func (suite *ClientRepositoryTestSuit) SetupTest() {
 func (suite *ClientRepositoryTestSuit) TearDownSuite() {
 	if suite.db != nil {
 		if err := suite.db.Cleanup(suite.ctx); err != nil {
-			log.Fatalf("Failed to cleanup test database: %v", err)
+			log.Fatalf("failed to cleanup test database: %v", err)
 		}
 	}
 }

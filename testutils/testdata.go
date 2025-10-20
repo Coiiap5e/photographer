@@ -3,11 +3,11 @@ package testutils
 import (
 	"time"
 
-	"github.com/Coiiap5e/photographer/model"
+	model2 "github.com/Coiiap5e/photographer/internal/model"
 )
 
-func CreateTestClient() *model.Client {
-	return &model.Client{
+func CreateTestClient() *model2.Client {
+	return &model2.Client{
 		FirstName:        "Ivan",
 		LastName:         "Ivanov",
 		Phone:            "+7(900)000-00-00",
@@ -15,7 +15,7 @@ func CreateTestClient() *model.Client {
 	}
 }
 
-func CreateTestClientWithOptions(option ...func(client *model.Client)) *model.Client {
+func CreateTestClientWithOptions(option ...func(client *model2.Client)) *model2.Client {
 	client := CreateTestClient()
 	for _, opt := range option {
 		opt(client)
@@ -23,8 +23,8 @@ func CreateTestClientWithOptions(option ...func(client *model.Client)) *model.Cl
 	return client
 }
 
-func CreateTestShoot(clientID int) *model.Shoot {
-	return &model.Shoot{
+func CreateTestShoot(clientID int) *model2.Shoot {
+	return &model2.Shoot{
 		ClientId:      clientID,
 		ShootDate:     time.Now().AddDate(0, 0, 30),
 		StartTime:     time.Date(0, 0, 0, 15, 0, 0, 0, time.UTC),
@@ -37,7 +37,7 @@ func CreateTestShoot(clientID int) *model.Shoot {
 
 }
 
-func CreateTestShootWithOptions(clientID int, option ...func(shoot *model.Shoot)) *model.Shoot {
+func CreateTestShootWithOptions(clientID int, option ...func(shoot *model2.Shoot)) *model2.Shoot {
 	shoot := CreateTestShoot(clientID)
 	for _, opt := range option {
 		opt(shoot)

@@ -6,19 +6,26 @@ import (
 
 	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
-	"github.com/Coiiap5e/photographer/model"
+	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/jackc/pgx/v5"
 )
 
-type ShootRepository struct {
+type Shoot interface {
+	AddShoot(ctx context.Context, shoot *model.Shoot) error
+	DeleteShoot(ctx context.Context, id int) error
+	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
+	GetShoots(ctx context.Context) ([]model.Shoot, error)
+}
+
+type postgresShoot struct {
 	db *database.DB
 }
 
-func NewShootRepository(db *database.DB) *ShootRepository {
-	return &ShootRepository{db: db}
+func NewShoot(db *database.DB) Shoot {
+	return &postgresShoot{db: db}
 }
 
-func (repo *ShootRepository) AddShoot(ctx context.Context, shoot *model.Shoot) error {
+func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot) error {
 	query := `
 INSERT INTO shoots
 	(client_id, date, start_time, end_time, shoot_price, location, client_first_name, client_last_name, shoot_type, notes)
@@ -38,7 +45,7 @@ RETURNING
 	return nil
 }
 
-func (repo *ShootRepository) DeleteShoot(ctx context.Context, id int) error {
+func (repo *postgresShoot) DeleteShoot(ctx context.Context, id int) error {
 	query := `
 DELETE FROM shoots WHERE id = $1`
 
@@ -54,7 +61,7 @@ DELETE FROM shoots WHERE id = $1`
 	return nil
 }
 
-func (repo *ShootRepository) GetShootByID(ctx context.Context, id int) (*model.Shoot, error) {
+func (repo *postgresShoot) GetShootByID(ctx context.Context, id int) (*model.Shoot, error) {
 	query := `
 SELECT 
 	id, client_id, date, start_time, end_time, 
@@ -80,7 +87,7 @@ WHERE id = $1`
 	return &shoot, nil
 }
 
-func (repo *ShootRepository) GetShoots(ctx context.Context) ([]model.Shoot, error) {
+func (repo *postgresShoot) GetShoots(ctx context.Context) ([]model.Shoot, error) {
 	query := `
 SELECT 
     id, client_id, date, start_time, end_time, 
@@ -95,7 +102,7 @@ FROM shoots`
 
 	defer rows.Close()
 
-	var shoots []model.Shoot
+	shoots := make([]model.Shoot, 0)
 
 	for rows.Next() {
 		var shoot model.Shoot

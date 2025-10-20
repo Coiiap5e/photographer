@@ -12,7 +12,7 @@ func CreateTestDB(ctx context.Context) (*TestDB, error) {
 
 	testDB, err = SetupTestDB(ctx)
 	if err != nil {
-		log.Printf("Failed to setup test database: %v", err)
+		log.Printf("failed to setup test database: %v", err)
 		return nil, err
 	}
 

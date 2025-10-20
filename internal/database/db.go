@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Coiiap5e/photographer/config"
+	"github.com/Coiiap5e/photographer/internal/config"
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
