@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,8 +17,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	log.SetFlags(log.Ldate)
-	log.SetOutput(os.Stdout)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	signalChan := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -26,29 +25,31 @@ func main() {
 
 	dbConfig, err := config.LoadDBConfig()
 	if err != nil {
-		log.Fatal("configuration error: ", err)
+		logger.Error("configuration error", "error", err)
+		os.Exit(1)
 	}
 
 	db, err := database.NewClient(ctx, dbConfig)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error("error create db connection", "error", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
 	clientRepo := repository.NewClient(db)
 	shootRepo := repository.NewShoot(db)
 
-	clientService := service.NewClient(clientRepo)
-	shootService := service.NewShoot(shootRepo, clientRepo)
+	clientService := service.NewClient(clientRepo, logger)
+	shootService := service.NewShoot(shootRepo, clientRepo, logger)
 
 	go func() {
 		sig := <-signalChan
-		log.Println("got signal:", sig)
+		logger.Info("got signal", "signal", sig)
 
 		done <- true
 	}()
 
-	app := cliapp.NewApp(clientService, shootService)
+	app := cliapp.NewApp(clientService, shootService, logger)
 	go func() {
 		app.RunMenu(ctx)
 		done <- true

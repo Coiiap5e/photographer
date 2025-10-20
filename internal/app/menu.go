@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/Coiiap5e/photographer/internal/errors"
@@ -16,12 +16,14 @@ import (
 type App struct {
 	clientService service.Client
 	shootService  service.Shoot
+	logger        *slog.Logger
 }
 
-func NewApp(clientService service.Client, shootService service.Shoot) *App {
+func NewApp(clientService service.Client, shootService service.Shoot, logger *slog.Logger) *App {
 	return &App{
 		clientService: clientService,
 		shootService:  shootService,
+		logger:        logger,
 	}
 }
 
@@ -48,8 +50,10 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error creating client: %v\n", err)
 			}
 
-			log.Printf("client added with ID: %d, created at: %v",
-				client.Id, client.CreatedAt)
+			a.logger.Info("client added",
+				"ID", client.Id,
+				"created at", client.CreatedAt,
+			)
 
 		case "2":
 			var id int
@@ -83,8 +87,10 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error deleting client: %v\n", err)
 			}
 
-			log.Printf("client %s %s with ID: %d deleted successfully \n",
-				client.FirstName, client.LastName, id)
+			a.logger.Info("client deleted successfully",
+				"client first name", client.FirstName,
+				"client last name", client.LastName, id,
+			)
 
 		case "3":
 			var shoot *model.Shoot
@@ -128,7 +134,7 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error creating shoot: %v\n", err)
 			}
 
-			log.Printf("shoot added successfully")
+			a.logger.Info("shoot added successfully")
 
 		case "4":
 			var id int
@@ -168,9 +174,11 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error deleting shoot: %v\n", err)
 			}
 
-			log.Printf("shoot %s with %s %s deleted successfully \n",
-				shoot.StartTime.Format("02.01.2006 15:04"),
-				shoot.ClientFirstName, shoot.ClientLastName)
+			a.logger.Info("shoot deleted successfully",
+				"start date", shoot.StartTime.Format("02.01.2006 15:04"),
+				"client first name", shoot.ClientFirstName,
+				"client last name", shoot.ClientLastName,
+			)
 
 		case "5":
 			err := a.clientService.GetClients(ctx)

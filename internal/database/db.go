@@ -22,16 +22,26 @@ func NewClient(ctx context.Context, db config.DbConfig) (*DB, error) {
 }
 
 func newFromConnStr(ctx context.Context, connStr string) (*DB, error) {
-	pool, err := pgxpool.New(ctx, connStr)
+	configPool, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
-		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
-			"Failed to connect to database")
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection, "failed to parse connection")
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	configPool.MaxConns = 25
+	configPool.MinConns = 5
+	configPool.MaxConnLifetime = 30 * time.Minute
+	configPool.MaxConnIdleTime = 5 * time.Minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, configPool)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
+			"failed to connect to database")
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := pool.Ping(ctx); err != nil {
+	if err := pool.Ping(pingCtx); err != nil {
 		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
 			"error pinging database")
 	}

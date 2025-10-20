@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/Coiiap5e/photographer/internal/errors"
@@ -20,10 +21,14 @@ type Client interface {
 
 type postgresClient struct {
 	clientRepo repository.Client
+	logger     *slog.Logger
 }
 
-func NewClient(clientRepo repository.Client) Client {
-	return &postgresClient{clientRepo: clientRepo}
+func NewClient(clientRepo repository.Client, logger *slog.Logger) Client {
+	return &postgresClient{
+		clientRepo: clientRepo,
+		logger:     logger,
+	}
 }
 
 func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) error {

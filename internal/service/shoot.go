@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
@@ -21,12 +22,14 @@ type Shoot interface {
 type postgresShoot struct {
 	shootRepo  repository.Shoot
 	clientRepo repository.Client
+	logger     *slog.Logger
 }
 
-func NewShoot(shootRepo repository.Shoot, clientRepo repository.Client) Shoot {
+func NewShoot(shootRepo repository.Shoot, clientRepo repository.Client, logger *slog.Logger) Shoot {
 	return &postgresShoot{
 		shootRepo:  shootRepo,
 		clientRepo: clientRepo,
+		logger:     logger,
 	}
 }
 
