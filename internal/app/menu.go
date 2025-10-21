@@ -50,6 +50,7 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error creating client: %v\n", err)
 			}
 
+			fmt.Println("Client added")
 			a.logger.Info("client added",
 				"ID", client.Id,
 				"created at", client.CreatedAt,
@@ -87,9 +88,11 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error deleting client: %v\n", err)
 			}
 
+			fmt.Println("Client deleted successfully")
 			a.logger.Info("client deleted successfully",
 				"client first name", client.FirstName,
-				"client last name", client.LastName, id,
+				"client last name", client.LastName,
+				"client id", id,
 			)
 
 		case "3":
@@ -134,6 +137,7 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error creating shoot: %v\n", err)
 			}
 
+			fmt.Println("shoot added successfully")
 			a.logger.Info("shoot added successfully")
 
 		case "4":
@@ -174,6 +178,7 @@ func (a *App) RunMenu(ctx context.Context) {
 				fmt.Printf("Error deleting shoot: %v\n", err)
 			}
 
+			fmt.Println("shoot deleted successfully")
 			a.logger.Info("shoot deleted successfully",
 				"start date", shoot.StartTime.Format("02.01.2006 15:04"),
 				"client first name", shoot.ClientFirstName,

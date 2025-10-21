@@ -2,17 +2,17 @@ package testutils
 
 import (
 	"context"
-	"log"
+	"log/slog"
 )
 
 var testDB *TestDB
 
-func CreateTestDB(ctx context.Context) (*TestDB, error) {
+func CreateTestDB(ctx context.Context, logger *slog.Logger) (*TestDB, error) {
 	var err error
 
 	testDB, err = SetupTestDB(ctx)
 	if err != nil {
-		log.Printf("failed to setup test database: %v", err)
+		logger.Error("failed to setup test database", "error", err)
 		return nil, err
 	}
 

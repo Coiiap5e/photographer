@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
 
@@ -21,14 +22,17 @@ type ShootRepositoryTestSuit struct {
 	db         *testutils.TestDB
 	repo       Shoot
 	testClient *model2.Client
+	logger     *slog.Logger
 }
 
 func (suite *ShootRepositoryTestSuit) SetupSuite() {
 	suite.ctx = context.Background()
 
+	suite.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	var err error
 
-	suite.db, err = testutils.CreateTestDB(suite.ctx)
+	suite.db, err = testutils.CreateTestDB(suite.ctx, suite.logger)
 	suite.Require().NoError(err, "Failed to setup test database")
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
@@ -50,7 +54,8 @@ func (suite *ShootRepositoryTestSuit) SetupTest() {
 func (suite *ShootRepositoryTestSuit) TearDownSuite() {
 	if suite.db != nil {
 		if err := suite.db.Cleanup(suite.ctx); err != nil {
-			log.Fatalf("failed to cleanup test database: %v", err)
+			suite.logger.Error("failed to cleanup test database", "error", err)
+			os.Exit(1)
 		}
 	}
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log/slog"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +10,7 @@ import (
 	cliapp "github.com/Coiiap5e/photographer/internal/app"
 	"github.com/Coiiap5e/photographer/internal/config"
 	"github.com/Coiiap5e/photographer/internal/database"
+	"github.com/Coiiap5e/photographer/internal/logs"
 	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/service"
 )
@@ -17,7 +18,11 @@ import (
 func main() {
 	ctx := context.Background()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger, closeLogger := logs.InitLogger()
+
+	defer closeLogger()
+
+	logger.Info("app starting")
 
 	signalChan := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -25,12 +30,16 @@ func main() {
 
 	dbConfig, err := config.LoadDBConfig()
 	if err != nil {
+		fmt.Println("Db error! More information in logs")
+
 		logger.Error("configuration error", "error", err)
 		os.Exit(1)
 	}
 
 	db, err := database.NewClient(ctx, dbConfig)
 	if err != nil {
+		fmt.Println("Db error! More information in logs")
+
 		logger.Error("error create db connection", "error", err)
 		os.Exit(1)
 	}
@@ -44,7 +53,9 @@ func main() {
 
 	go func() {
 		sig := <-signalChan
-		logger.Info("got signal", "signal", sig)
+
+		fmt.Println("Got signal: ", sig)
+		logger.Info("got signal", "signal", sig.String())
 
 		done <- true
 	}()
@@ -56,4 +67,6 @@ func main() {
 	}()
 
 	<-done
+
+	logger.Info("app end")
 }

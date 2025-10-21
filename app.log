@@ -1,0 +1,10 @@
+{"time":"2025-10-21T19:23:17.2551337+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Elena","client last name":"Magnus","!BADKEY":4}
+{"time":"2025-10-21T19:40:52.5084127+03:00","level":"INFO","msg":"client added","ID":5,"created at":"2025-10-21T16:40:52.506566Z"}
+{"time":"2025-10-21T19:41:08.3799554+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Ivan","client last name":"Ivanov","!BADKEY":5}
+{"time":"2025-10-21T20:17:51.9434895+03:00","level":"INFO","msg":"client added","ID":6,"created at":"2025-10-21T17:17:51.939217Z"}
+{"time":"2025-10-21T20:18:07.6488355+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Ivan","client last name":"Titov","client id":6}
+{"time":"2025-10-21T20:30:54.5309148+03:00","level":"INFO","msg":"app starting"}
+{"time":"2025-10-21T20:31:15.2353764+03:00","level":"INFO","msg":"client added","ID":7,"created at":"2025-10-21T17:31:15.234263Z"}
+{"time":"2025-10-21T20:31:26.9227399+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Iv","client last name":"IVasd","client id":7}
+{"time":"2025-10-21T20:31:44.8818822+03:00","level":"INFO","msg":"client added","ID":8,"created at":"2025-10-21T17:31:44.879619Z"}
+{"time":"2025-10-21T20:31:48.0239284+03:00","level":"INFO","msg":"app end"}
