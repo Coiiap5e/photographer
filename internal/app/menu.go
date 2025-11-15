@@ -29,6 +29,10 @@ func NewApp(clientService service.Client, shootService service.Shoot, logger *sl
 	}
 }
 
+func (a *App) GetLogger() *slog.Logger {
+	return a.logger
+}
+
 func (a *App) RunMenu(ctx context.Context) {
 	scanner := bufio.NewScanner(os.Stdin)
 

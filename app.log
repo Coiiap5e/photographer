@@ -27,3 +27,5 @@
 {"time":"2025-11-14T18:17:01.2179973+03:00","level":"INFO","msg":"client added","ID":7,"created at":"2025-11-14T15:17:01.215857Z"}
 {"time":"2025-11-14T18:18:05.8543201+03:00","level":"INFO","msg":"shoot added successfully"}
 {"time":"2025-11-14T18:19:09.9919544+03:00","level":"INFO","msg":"app end"}
+{"time":"2025-11-15T18:53:58.2787009+03:00","level":"INFO","msg":"app starting"}
+{"time":"2025-11-15T18:54:37.5339665+03:00","level":"INFO","msg":"app end"}

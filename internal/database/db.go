@@ -14,11 +14,24 @@ type DB struct {
 	Pool *pgxpool.Pool
 }
 
-func NewClient(ctx context.Context, db config.DbConfig, poolBuilder config.PoolConfig) (*DB, error) {
+func NewClient(db config.DbConfig, poolBuilder config.PoolConfig) (*DB, func(), error) {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		db.Username, db.Password, db.Host, db.Port, db.Database)
 
-	return newFromConnStr(ctx, connStr, poolBuilder)
+	ctx := context.Background()
+
+	dbInstance, err := newFromConnStr(ctx, connStr, poolBuilder)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cleanup := func() {
+		if dbInstance != nil {
+			dbInstance.Close()
+		}
+	}
+
+	return dbInstance, cleanup, nil
 }
 
 func newFromConnStr(ctx context.Context, connStr string, poolBuilder config.PoolConfig) (*DB, error) {
