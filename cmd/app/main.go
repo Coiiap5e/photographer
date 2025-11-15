@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	cliapp "github.com/Coiiap5e/photographer/internal/app"
 	"github.com/Coiiap5e/photographer/internal/config"
@@ -36,7 +37,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := database.NewClient(ctx, dbConfig)
+	NewPoolBuilder := config.NewPoolConfigBuilder().
+		WithMaxOpenConns(25).
+		WithMaxIdleConns(5).
+		WithMaxConnLifetime(30 * time.Minute).
+		WithMaxConnIdleTime(5 * time.Minute).
+		Build()
+
+	db, err := database.NewClient(ctx, dbConfig, NewPoolBuilder)
 	if err != nil {
 		fmt.Println("Db error! More information in logs")
 

@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"testing"
 	"time"
 
-	model2 "github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/Coiiap5e/photographer/testutils"
 	"github.com/stretchr/testify/suite"
 )
@@ -18,11 +20,12 @@ func TestShootRepositoryTestSuit(t *testing.T) {
 
 type ShootRepositoryTestSuit struct {
 	suite.Suite
-	ctx        context.Context
-	db         *testutils.TestDB
-	repo       Shoot
-	testClient *model2.Client
-	logger     *slog.Logger
+	ctx             context.Context
+	db              *testutils.TestDB
+	repo            Shoot
+	testClient      *model.Client
+	testShootClient []model.ShootClient
+	logger          *slog.Logger
 }
 
 func (suite *ShootRepositoryTestSuit) SetupSuite() {
@@ -47,8 +50,10 @@ func (suite *ShootRepositoryTestSuit) SetupTest() {
 	clientRepo := NewClient(suite.db.GetDB())
 	testClient := testutils.CreateTestClient()
 	err = clientRepo.AddClient(suite.ctx, testClient)
+	testShootClient := testutils.CreateTestShootClients(testClient.Id)
 	suite.Require().NoError(err)
 	suite.testClient = testClient
+	suite.testShootClient = testShootClient
 }
 
 func (suite *ShootRepositoryTestSuit) TearDownSuite() {
@@ -62,10 +67,11 @@ func (suite *ShootRepositoryTestSuit) TearDownSuite() {
 
 func (suite *ShootRepositoryTestSuit) TestAddShoot() {
 	// Given
-	testShoot := testutils.CreateTestShoot(suite.testClient.Id)
+	baseDate := clock.New(time.Date(2025, 11, 16, 0, 0, 0, 0, time.UTC))
+	testShoot := testutils.CreateTestShoot(suite.testClient.Id, baseDate)
 
 	// When
-	err := suite.repo.AddShoot(suite.ctx, testShoot)
+	err := suite.repo.AddShoot(suite.ctx, testShoot, suite.testShootClient)
 
 	// Then
 	suite.NoError(err, "should not return error")
@@ -76,8 +82,9 @@ func (suite *ShootRepositoryTestSuit) TestAddShoot() {
 func (suite *ShootRepositoryTestSuit) TestGetShootByID() {
 	suite.T().Run("should successfully get a shoot by ID", func(t *testing.T) {
 		// Given
-		testShoot := testutils.CreateTestShoot(suite.testClient.Id)
-		err := suite.repo.AddShoot(suite.ctx, testShoot)
+		baseDate := clock.New(time.Date(2025, 11, 16, 0, 0, 0, 0, time.UTC))
+		testShoot := testutils.CreateTestShoot(suite.testClient.Id, baseDate)
+		err := suite.repo.AddShoot(suite.ctx, testShoot, suite.testShootClient)
 		suite.NoError(err, "shoot should be created")
 
 		// When
@@ -115,8 +122,9 @@ func (suite *ShootRepositoryTestSuit) TestGetShootByID() {
 func (suite *ShootRepositoryTestSuit) TestDeleteShoot() {
 	suite.T().Run("should successfully delete shoot", func(t *testing.T) {
 		// Given
-		testShoot := testutils.CreateTestShoot(suite.testClient.Id)
-		err := suite.repo.AddShoot(suite.ctx, testShoot)
+		baseDate := clock.New(time.Date(2025, 11, 16, 0, 0, 0, 0, time.UTC))
+		testShoot := testutils.CreateTestShoot(suite.testClient.Id, baseDate)
+		err := suite.repo.AddShoot(suite.ctx, testShoot, suite.testShootClient)
 		suite.NoError(err, "shoot should be created")
 
 		shootID := testShoot.Id
@@ -146,33 +154,36 @@ func (suite *ShootRepositoryTestSuit) TestDeleteShoot() {
 
 func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	// Given
-	testShoot1 := testutils.CreateTestShoot(suite.testClient.Id)
-	testShoot2 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model2.Shoot) {
-		shoot.ShootDate = time.Now().AddDate(0, 0, 10)
+	baseDate := clock.New(time.Date(2025, 11, 16, 0, 0, 0, 0, time.UTC))
+	testShoot1 := testutils.CreateTestShoot(suite.testClient.Id, baseDate)
+	testShoot2 := testutils.CreateTestShootWithOptions(suite.testClient.Id, baseDate, func(shoot *model.Shoot) {
+		shoot.ShootDate = shoot.ShootDate.Add(30 * 24 * time.Hour)
+		shoot.StartTime = shoot.ShootDate.Add(12 * time.Hour)
+		shoot.EndTime = shoot.ShootDate.Add(14 * time.Hour)
 		shoot.ShootLocation = "photo studio Aurora"
 		shoot.Notes = ""
 	})
-	testShoot3 := testutils.CreateTestShootWithOptions(suite.testClient.Id, func(shoot *model2.Shoot) {
-		shoot.ShootDate = time.Now().AddDate(0, 0, 60)
+	testShoot3 := testutils.CreateTestShootWithOptions(suite.testClient.Id, baseDate, func(shoot *model.Shoot) {
 		shoot.ShootLocation = "beacon"
 		shoot.Notes = "blanket"
 		shoot.ShootType = "family"
 	})
-	err := suite.repo.AddShoot(suite.ctx, testShoot1)
+	err := suite.repo.AddShoot(suite.ctx, testShoot1, suite.testShootClient)
 	suite.NoError(err, "shoot should be created")
-	err = suite.repo.AddShoot(suite.ctx, testShoot2)
+	err = suite.repo.AddShoot(suite.ctx, testShoot2, suite.testShootClient)
 	suite.NoError(err, "shoot should be created")
-	err = suite.repo.AddShoot(suite.ctx, testShoot3)
+	err = suite.repo.AddShoot(suite.ctx, testShoot3, suite.testShootClient)
 	suite.NoError(err, "shoot should be created")
 
 	// When
 	allShoots, err := suite.repo.GetShoots(suite.ctx)
+	fmt.Println(allShoots)
 
 	// Then
 	suite.NoError(err, "should not return error")
 	suite.Len(allShoots, 3, "should return 3 shoots")
 
-	foundShoots := make(map[int]model2.Shoot)
+	foundShoots := make(map[int]model.Shoot)
 	for _, shoot := range allShoots {
 		foundShoots[shoot.Id] = shoot
 	}
@@ -182,8 +193,7 @@ func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	suite.Contains(foundShoots, testShoot3.Id, "should contain third shoot")
 
 	shoot1 := foundShoots[testShoot1.Id]
-	suite.Equal(testShoot1.ShootDate.Format("2006-01-02"), shoot1.ShootDate.Format("2006-01-02"),
-		"shoot date should match")
+	suite.Equal(testShoot1.ShootDate, shoot1.ShootDate, "shoot date should match")
 	suite.Equal(testShoot1.StartTime.Format("15:04"), shoot1.StartTime.Format("15:04"),
 		"shoot start time should match")
 	suite.Equal(testShoot1.EndTime.Format("15:04"), shoot1.EndTime.Format("15:04"),
@@ -194,8 +204,7 @@ func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	suite.Equal(testShoot1.Notes, shoot1.Notes, "notes should match")
 
 	shoot2 := foundShoots[testShoot2.Id]
-	suite.Equal(testShoot2.ShootDate.Format("2006-01-02"), shoot2.ShootDate.Format("2006-01-02"),
-		"shoot date should match")
+	suite.Equal(testShoot2.ShootDate, shoot2.ShootDate, "shoot date should match")
 	suite.Equal(testShoot2.StartTime.Format("15:04"), shoot2.StartTime.Format("15:04"),
 		"shoot start time should match")
 	suite.Equal(testShoot2.EndTime.Format("15:04"), shoot2.EndTime.Format("15:04"),
@@ -206,8 +215,7 @@ func (suite *ShootRepositoryTestSuit) TestGetShoots() {
 	suite.Equal(testShoot2.Notes, shoot2.Notes, "notes should match")
 
 	shoot3 := foundShoots[testShoot3.Id]
-	suite.Equal(testShoot3.ShootDate.Format("2006-01-02"), shoot3.ShootDate.Format("2006-01-02"),
-		"shoot date should match")
+	suite.Equal(testShoot3.ShootDate, shoot3.ShootDate, "shoot date should match")
 	suite.Equal(testShoot3.StartTime.Format("15:04"), shoot3.StartTime.Format("15:04"),
 		"shoot start time should match")
 	suite.Equal(testShoot3.EndTime.Format("15:04"), shoot3.EndTime.Format("15:04"),

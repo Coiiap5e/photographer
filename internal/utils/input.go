@@ -90,3 +90,16 @@ func InputShootDate() (time.Time, time.Time, time.Time) {
 
 	return date, startDate, endDate
 }
+
+func InputBool(prompt string) bool {
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Printf("%s: ", prompt)
+		scanner.Scan()
+		value, err := strconv.ParseBool(scanner.Text())
+		if err == nil {
+			return value
+		}
+		fmt.Println("Error: enter true/false")
+	}
+}

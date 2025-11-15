@@ -10,11 +10,13 @@ type ErrorCode string
 const (
 	// Database errors
 
-	ErrCodeDBConnection ErrorCode = "DB_CONNECTION_ERROR"
-	ErrCodeDBQuery      ErrorCode = "DB_QUERY_ERROR"
-	ErrCodeDBInsert     ErrorCode = "DB_INSERT_ERROR"
-	ErrCodeDBDelete     ErrorCode = "DB_DELETE_ERROR"
-	ErrCodeDBSelect     ErrorCode = "DB_SELECT_ERROR"
+	ErrCodeDBConnection  ErrorCode = "DB_CONNECTION_ERROR"
+	ErrCodeDBQuery       ErrorCode = "DB_QUERY_ERROR"
+	ErrCodeDBInsert      ErrorCode = "DB_INSERT_ERROR"
+	ErrCodeDBDelete      ErrorCode = "DB_DELETE_ERROR"
+	ErrCodeDBSelect      ErrorCode = "DB_SELECT_ERROR"
+	ErrCodeDBTransaction ErrorCode = "DB_TRANSACTION_ERROR"
+	ErrCodeDBScan        ErrorCode = "DB_SCAN_ERROR"
 
 	// Client operations
 
