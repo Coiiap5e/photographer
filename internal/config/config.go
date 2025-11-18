@@ -3,17 +3,69 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/joho/godotenv"
 )
 
 type DbConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Database string `json:"database"`
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Database string
+}
+
+type PoolConfig struct {
+	MaxOpenConns    int
+	MaxIdleConns    int
+	MaxConnLifetime time.Duration
+	MaxConnIdleTime time.Duration
+}
+
+type PoolConfigBuilder struct {
+	config PoolConfig
+}
+
+func NewPoolConfigBuilder() *PoolConfigBuilder {
+	return &PoolConfigBuilder{config: PoolConfig{
+		MaxOpenConns:    25,
+		MaxIdleConns:    5,
+		MaxConnLifetime: 20 * time.Minute,
+		MaxConnIdleTime: 1 * time.Minute,
+	}}
+}
+
+func (b *PoolConfigBuilder) WithMaxOpenConns(MaxOpenConns int) *PoolConfigBuilder {
+	if MaxOpenConns > 0 {
+		b.config.MaxOpenConns = MaxOpenConns
+	}
+	return b
+}
+func (b *PoolConfigBuilder) WithMaxIdleConns(MaxIdleConns int) *PoolConfigBuilder {
+	if MaxIdleConns > 0 {
+		b.config.MaxIdleConns = MaxIdleConns
+	}
+	return b
+}
+
+func (b *PoolConfigBuilder) WithMaxConnLifetime(MaxConnLifetime time.Duration) *PoolConfigBuilder {
+	if MaxConnLifetime > 0 {
+		b.config.MaxConnLifetime = MaxConnLifetime
+	}
+	return b
+}
+
+func (b *PoolConfigBuilder) WithMaxConnIdleTime(MaxConnIdleTime time.Duration) *PoolConfigBuilder {
+	if MaxConnIdleTime > 0 {
+		b.config.MaxConnIdleTime = MaxConnIdleTime
+	}
+	return b
+}
+
+func (b *PoolConfigBuilder) Build() PoolConfig {
+	return b.config
 }
 
 func LoadDBConfig() (DbConfig, error) {

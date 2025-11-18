@@ -14,24 +14,47 @@ type DB struct {
 	Pool *pgxpool.Pool
 }
 
-func NewClient(ctx context.Context, db config.DbConfig) (*DB, error) {
+func NewClient(db config.DbConfig, poolBuilder config.PoolConfig) (*DB, func(), error) {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		db.Username, db.Password, db.Host, db.Port, db.Database)
 
-	return newFromConnStr(ctx, connStr)
-}
+	ctx := context.Background()
 
-func newFromConnStr(ctx context.Context, connStr string) (*DB, error) {
-	pool, err := pgxpool.New(ctx, connStr)
+	dbInstance, err := newFromConnStr(ctx, connStr, poolBuilder)
 	if err != nil {
-		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
-			"Failed to connect to database")
+		return nil, nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	cleanup := func() {
+		if dbInstance != nil {
+			dbInstance.Close()
+		}
+	}
+
+	return dbInstance, cleanup, nil
+}
+
+func newFromConnStr(ctx context.Context, connStr string, poolBuilder config.PoolConfig) (*DB, error) {
+	configPool, err := pgxpool.ParseConfig(connStr)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection, "failed to parse connection")
+	}
+
+	configPool.MaxConns = int32(poolBuilder.MaxOpenConns)
+	configPool.MinConns = int32(poolBuilder.MaxIdleConns)
+	configPool.MaxConnLifetime = poolBuilder.MaxConnLifetime
+	configPool.MaxConnIdleTime = poolBuilder.MaxConnIdleTime
+
+	pool, err := pgxpool.NewWithConfig(ctx, configPool)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
+			"failed to connect to database")
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := pool.Ping(ctx); err != nil {
+	if err := pool.Ping(pingCtx); err != nil {
 		return nil, errors.Wrap(err, errors.ErrCodeDBConnection,
 			"error pinging database")
 	}
