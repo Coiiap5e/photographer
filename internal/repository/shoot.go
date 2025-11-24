@@ -7,6 +7,7 @@ import (
 	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,11 +19,15 @@ type Shoot interface {
 }
 
 type postgresShoot struct {
-	db *database.DB
+	db    *database.DB
+	clock *clock.Clock
 }
 
-func NewShoot(db *database.DB) Shoot {
-	return &postgresShoot{db: db}
+func NewShoot(db *database.DB, clock *clock.Clock) Shoot {
+	return &postgresShoot{
+		db:    db,
+		clock: clock,
+	}
 }
 
 func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, clients []model.ShootClient) error {
@@ -34,15 +39,15 @@ func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, cli
 
 	query := `
 INSERT INTO shoots
-	(date, start_time, end_time, shoot_price, location, shoot_type, notes)
+	(date, start_time, end_time, shoot_price, location, shoot_type, notes, created_at)
 VALUES 
-    ($1, $2, $3, $4, $5, $6, $7)
+    ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING
-	id, created_at`
+	id`
 
 	err = tx.QueryRow(ctx, query, shoot.ShootDate,
 		shoot.StartTime, shoot.EndTime, shoot.ShootPrice, shoot.ShootLocation,
-		shoot.ShootType, shoot.Notes).Scan(&shoot.Id, &shoot.CreatedAt)
+		shoot.ShootType, shoot.Notes, repo.clock.Now()).Scan(&shoot.Id)
 
 	if err != nil {
 		return myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
@@ -67,11 +72,11 @@ RETURNING
 func (repo *postgresShoot) addShootClientTx(ctx context.Context, tx pgx.Tx, client model.ShootClient) error {
 	query := `
 INSERT INTO shoot_clients 
-    (shoot_id, client_id, is_main_client, relationship_type)
+    (shoot_id, client_id, is_main_client, relationship_type, created_at)
 VALUES
-	($1, $2, $3, $4)
+	($1, $2, $3, $4, $5)
 `
-	_, err := tx.Exec(ctx, query, client.ShootID, client.ClientID, client.IsMainClient, client.RelationshipType)
+	_, err := tx.Exec(ctx, query, client.ShootID, client.ClientID, client.IsMainClient, client.RelationshipType, repo.clock.Now())
 	if err != nil {
 		return myerrors.Wrap(err, myerrors.ErrCodeDBQuery, "failed to add client to shoot")
 	}
@@ -179,10 +184,11 @@ WHERE sc.shoot_id = $1
 ORDER BY sc.is_main_client DESC, cl.first_name
 `
 	rows, err := repo.db.Pool.Query(ctx, query, shootID)
+	defer rows.Close()
+
 	if err != nil {
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBQuery, "failed to get shoot clients")
 	}
-	defer rows.Close()
 
 	clients := make([]model.ShootClientInfo, 0)
 	for rows.Next() {

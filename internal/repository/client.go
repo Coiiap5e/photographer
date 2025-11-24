@@ -7,6 +7,7 @@ import (
 	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -18,25 +19,29 @@ type Client interface {
 }
 
 type postgresClient struct {
-	db *database.DB
+	db    *database.DB
+	clock *clock.Clock
 }
 
-func NewClient(db *database.DB) Client {
-	return &postgresClient{db: db}
+func NewClient(db *database.DB, clock *clock.Clock) Client {
+	return &postgresClient{
+		db:    db,
+		clock: clock,
+	}
 }
 
 func (repo *postgresClient) AddClient(ctx context.Context, client *model.Client) error {
 	query := `
 INSERT INTO clients 
-    (first_name, last_name, phone, social_network_url) 
+    (first_name, last_name, phone, social_network_url, created_at) 
 VALUES 
-    ($1, $2, $3, $4) 
+    ($1, $2, $3, $4, $5) 
 RETURNING 
-    id, created_at`
+    id`
 
 	err := repo.db.Pool.QueryRow(ctx, query,
-		client.FirstName, client.LastName, client.Phone, client.SocialNetworkUrl).
-		Scan(&client.Id, &client.CreatedAt)
+		client.FirstName, client.LastName, client.Phone, client.SocialNetworkUrl, repo.clock.Now()).
+		Scan(&client.Id)
 
 	if err != nil {
 		return myerrors.Wrap(err, myerrors.ErrCodeClientCreate, "failed to create client")

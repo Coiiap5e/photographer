@@ -6,8 +6,9 @@ import (
 )
 
 type Clock struct {
-	mu  sync.RWMutex
-	now time.Time
+	mu       sync.RWMutex
+	now      time.Time
+	location *time.Location
 }
 
 func New(initialTime time.Time) *Clock {
@@ -34,4 +35,12 @@ func (c *Clock) Before(d time.Duration) time.Time {
 	defer c.mu.Unlock()
 	c.now = c.now.Add(-d)
 	return c.now
+}
+
+func NewInMoscow() *Clock {
+	location, _ := time.LoadLocation("Europe/Moscow")
+	return &Clock{
+		now:      time.Now().In(location),
+		location: location,
+	}
 }

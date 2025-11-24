@@ -30,8 +30,8 @@ type PoolConfigBuilder struct {
 
 func NewPoolConfigBuilder() *PoolConfigBuilder {
 	return &PoolConfigBuilder{config: PoolConfig{
-		MaxOpenConns:    25,
-		MaxIdleConns:    5,
+		MaxOpenConns:    10,
+		MaxIdleConns:    3,
 		MaxConnLifetime: 20 * time.Minute,
 		MaxConnIdleTime: 1 * time.Minute,
 	}}

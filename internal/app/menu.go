@@ -54,7 +54,7 @@ func (a *App) RunMenu(ctx context.Context) {
 
 			fmt.Println("Client added")
 			a.logger.Info("client added",
-				"ID", client.Id,
+				"id", client.Id,
 				"created at", client.CreatedAt,
 			)
 

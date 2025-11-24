@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	cliapp "github.com/Coiiap5e/photographer/internal/app"
 	"github.com/Coiiap5e/photographer/internal/config"
@@ -14,10 +13,13 @@ import (
 	"github.com/Coiiap5e/photographer/internal/logs"
 	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/service"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 )
 
 func main() {
 	ctx := context.Background()
+
+	newClock := clock.NewInMoscow()
 
 	logger, closeLogger := logs.InitLogger()
 
@@ -37,14 +39,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	NewPoolBuilder := config.NewPoolConfigBuilder().
-		WithMaxOpenConns(25).
-		WithMaxIdleConns(5).
-		WithMaxConnLifetime(30 * time.Minute).
-		WithMaxConnIdleTime(5 * time.Minute).
-		Build()
-
-	db, err := database.NewClient(ctx, dbConfig, NewPoolBuilder)
+	db, err := database.NewClient(ctx, dbConfig)
 	if err != nil {
 		fmt.Println("Db error! More information in logs")
 
@@ -53,8 +48,8 @@ func main() {
 	}
 	defer db.Close()
 
-	clientRepo := repository.NewClient(db)
-	shootRepo := repository.NewShoot(db)
+	clientRepo := repository.NewClient(db, newClock)
+	shootRepo := repository.NewShoot(db, newClock)
 
 	clientService := service.NewClient(clientRepo, logger)
 	shootService := service.NewShoot(shootRepo, clientRepo, logger)

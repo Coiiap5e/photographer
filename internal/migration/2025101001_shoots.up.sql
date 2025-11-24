@@ -8,5 +8,5 @@ CREATE TABLE shoots
     location VARCHAR(255),
     shoot_type VARCHAR(100),
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL
 );
