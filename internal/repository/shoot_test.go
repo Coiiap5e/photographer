@@ -24,12 +24,15 @@ type ShootRepositoryTestSuit struct {
 	db              *testutils.TestDB
 	repo            Shoot
 	testClient      *model.Client
-	testShootClient []model.ShootClient
+	testShootClient []*model.ShootClient
 	logger          *slog.Logger
+	clock           *clock.Clock
 }
 
 func (suite *ShootRepositoryTestSuit) SetupSuite() {
 	suite.ctx = context.Background()
+
+	suite.clock = clock.NewInMoscow()
 
 	suite.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
@@ -40,14 +43,14 @@ func (suite *ShootRepositoryTestSuit) SetupSuite() {
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
 
-	suite.repo = NewShoot(suite.db.GetDB())
+	suite.repo = NewShoot(suite.db.GetDB(), suite.clock)
 }
 
 func (suite *ShootRepositoryTestSuit) SetupTest() {
 	err := suite.db.CleanTables(suite.ctx)
 	suite.Require().NoError(err)
 
-	clientRepo := NewClient(suite.db.GetDB())
+	clientRepo := NewClient(suite.db.GetDB(), suite.clock)
 	testClient := testutils.CreateTestClient()
 	err = clientRepo.AddClient(suite.ctx, testClient)
 	testShootClient := testutils.CreateTestShootClients(testClient.Id)

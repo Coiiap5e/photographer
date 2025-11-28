@@ -16,8 +16,8 @@ func CreateTestClient() *model.Client {
 	}
 }
 
-func CreateTestShootClients(id int) []model.ShootClient {
-	return []model.ShootClient{
+func CreateTestShootClients(id int) []*model.ShootClient {
+	return []*model.ShootClient{
 		{
 			ClientID:         id,
 			IsMainClient:     true,
@@ -35,6 +35,7 @@ func CreateTestClientWithOptions(option ...func(client *model.Client)) *model.Cl
 }
 
 func CreateTestShoot(clientID int, baseDate *clock.Clock) *model.Shoot {
+	//TODO: доработать тест после многие ко многим (использовать id)
 	baseTime := baseDate.Now()
 	return &model.Shoot{
 		ShootDate:     baseTime,

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/Coiiap5e/photographer/testutils"
 	"github.com/stretchr/testify/suite"
 )
@@ -21,10 +22,13 @@ type ClientRepositoryTestSuit struct {
 	db     *testutils.TestDB
 	repo   Client
 	logger *slog.Logger
+	clock  *clock.Clock
 }
 
 func (suite *ClientRepositoryTestSuit) SetupSuite() {
 	suite.ctx = context.Background()
+
+	suite.clock = clock.NewInMoscow()
 
 	suite.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
@@ -35,7 +39,7 @@ func (suite *ClientRepositoryTestSuit) SetupSuite() {
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
 
-	suite.repo = NewClient(suite.db.GetDB())
+	suite.repo = NewClient(suite.db.GetDB(), suite.clock)
 }
 
 func (suite *ClientRepositoryTestSuit) SetupTest() {

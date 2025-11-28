@@ -98,14 +98,14 @@ func (a *App) RunMenu(ctx context.Context) {
 			)
 
 		case "3":
-			clients := make([]model.ShootClient, 0)
+			clients := make([]*model.ShootClient, 0)
 
 			shootDate, startTime, endTime := utils.InputShootDate()
 
 			for {
 				clientID := utils.InputId("Client ID")
 
-				if lo.ContainsBy(clients, func(checkClient model.ShootClient) bool {
+				if lo.ContainsBy(clients, func(checkClient *model.ShootClient) bool {
 					return checkClient.ClientID == clientID
 				}) {
 					fmt.Printf("Client with ID %d is already added to this shoot\n", clientID)
@@ -125,7 +125,7 @@ func (a *App) RunMenu(ctx context.Context) {
 				isMainClient := utils.InputBool("Is this main client? (true/false)")
 				relationshipType := utils.InputStringRequired("Relationship type (bride/groom/witness/etc)")
 
-				shootClient := model.ShootClient{
+				shootClient := &model.ShootClient{
 					ClientID:         client.Id,
 					IsMainClient:     isMainClient,
 					RelationshipType: relationshipType,

@@ -12,7 +12,7 @@ import (
 )
 
 type Shoot interface {
-	AddShoot(ctx context.Context, shoot *model.Shoot, clients []model.ShootClient) error
+	AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error
 	DeleteShoot(ctx context.Context, id int) error
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
 	GetShoots(ctx context.Context) ([]model.Shoot, error)
@@ -30,7 +30,7 @@ func NewShoot(db *database.DB, clock *clock.Clock) Shoot {
 	}
 }
 
-func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, clients []model.ShootClient) error {
+func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error {
 	tx, err := repo.db.Pool.Begin(ctx)
 	if err != nil {
 		return myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to begin transaction")
@@ -53,13 +53,9 @@ RETURNING
 		return myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
 	}
 
-	for i := range clients {
-		clients[i].ShootID = shoot.Id
-
-		err := repo.addShootClientTx(ctx, tx, clients[i])
-		if err != nil {
-			return err
-		}
+	err = repo.addAllClientsTx(ctx, tx, clients, shoot.Id)
+	if err != nil {
+		return myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to add clients")
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -69,18 +65,36 @@ RETURNING
 	return nil
 }
 
-func (repo *postgresShoot) addShootClientTx(ctx context.Context, tx pgx.Tx, client model.ShootClient) error {
-	query := `
-INSERT INTO shoot_clients 
+func (repo *postgresShoot) addAllClientsTx(ctx context.Context, tx pgx.Tx, clients []*model.ShootClient, shootID int) error {
+	batch := &pgx.Batch{}
+
+	for _, client := range clients {
+		client.ShootID = shootID
+
+		batch.Queue(`
+INSERT INTO shoot_clients
     (shoot_id, client_id, is_main_client, relationship_type, created_at)
-VALUES
-	($1, $2, $3, $4, $5)
-`
-	_, err := tx.Exec(ctx, query, client.ShootID, client.ClientID, client.IsMainClient, client.RelationshipType, repo.clock.Now())
-	if err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeDBQuery, "failed to add client to shoot")
+VALUES 
+    ($1, $2, $3, $4, $5)
+Returning created_at`,
+			client.ShootID,
+			client.ClientID,
+			client.IsMainClient,
+			client.RelationshipType,
+			repo.clock.Now())
 	}
-	return nil
+
+	results := tx.SendBatch(ctx, batch)
+	defer results.Close()
+
+	for i := 0; i < len(clients); i++ {
+		err := results.QueryRow().Scan(&clients[i].CreatedAt)
+		if err != nil {
+			return myerrors.Wrap(err, myerrors.ErrCodeDBQuery, "failed to get created_at for shoot client")
+		}
+	}
+
+	return results.Close()
 }
 
 func (repo *postgresShoot) DeleteShoot(ctx context.Context, id int) error {

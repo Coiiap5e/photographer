@@ -15,7 +15,7 @@ import (
 )
 
 type Shoot interface {
-	CreateShoot(ctx context.Context, shoot *model.Shoot, clients []model.ShootClient) error
+	CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error
 	DeleteShoot(ctx context.Context, id int) error
 	GetShoots(ctx context.Context) error
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
@@ -37,7 +37,7 @@ func NewShoot(shootRepo repository.Shoot, clientRepo repository.Client, logger *
 	}
 }
 
-func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, clients []model.ShootClient) error {
+func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error {
 	err := s.shootRepo.AddShoot(ctx, shoot, clients)
 	if err != nil {
 		return err
