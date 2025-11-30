@@ -15,7 +15,7 @@ import (
 )
 
 type Shoot interface {
-	CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error
+	CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	DeleteShoot(ctx context.Context, id int) error
 	GetShoots(ctx context.Context) error
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
@@ -24,26 +24,38 @@ type Shoot interface {
 }
 
 type postgresShoot struct {
-	shootRepo  repository.Shoot
-	clientRepo repository.Client
-	logger     *slog.Logger
+	shootRepo     repository.Shoot
+	clientService Client
+	logger        *slog.Logger
 }
 
-func NewShoot(shootRepo repository.Shoot, clientRepo repository.Client, logger *slog.Logger) Shoot {
+func NewShoot(shootRepo repository.Shoot, clientService Client, logger *slog.Logger) Shoot {
 	return &postgresShoot{
-		shootRepo:  shootRepo,
-		clientRepo: clientRepo,
-		logger:     logger,
+		shootRepo:     shootRepo,
+		clientService: clientService,
+		logger:        logger,
 	}
 }
 
-func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error {
-	err := s.shootRepo.AddShoot(ctx, shoot, clients)
-	if err != nil {
-		return err
+func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error) {
+	for _, client := range clients {
+		_, err := s.clientService.GetClientByID(ctx, client.ClientID)
+		if err != nil {
+			if myerrors.IsErrorCode(err, myerrors.ErrCodeClientNotFound) {
+				return nil, myerrors.New(myerrors.ErrCodeClientNotFound,
+					fmt.Sprintf("client with ID %d not found", client.ClientID))
+			}
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect,
+				fmt.Sprintf("failed to get client with ID %d", client.ClientID))
+		}
 	}
 
-	return nil
+	createdShoot, err := s.shootRepo.AddShoot(ctx, shoot, clients)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdShoot, nil
 }
 
 func (s *postgresShoot) GetShootByID(ctx context.Context, id int) (*model.Shoot, error) {

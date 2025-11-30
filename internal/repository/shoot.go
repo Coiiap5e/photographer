@@ -12,7 +12,7 @@ import (
 )
 
 type Shoot interface {
-	AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error
+	AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	DeleteShoot(ctx context.Context, id int) error
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
 	GetShoots(ctx context.Context) ([]model.Shoot, error)
@@ -30,12 +30,15 @@ func NewShoot(db *database.DB, clock *clock.Clock) Shoot {
 	}
 }
 
-func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) error {
+func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error) {
 	tx, err := repo.db.Pool.Begin(ctx)
 	if err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to begin transaction")
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to begin transaction")
 	}
 	defer tx.Rollback(ctx)
+
+	shootToCreate := *shoot
+	shootToCreate.CreatedAt = repo.clock.Now()
 
 	query := `
 INSERT INTO shoots
@@ -45,24 +48,24 @@ VALUES
 RETURNING
 	id`
 
-	err = tx.QueryRow(ctx, query, shoot.ShootDate,
-		shoot.StartTime, shoot.EndTime, shoot.ShootPrice, shoot.ShootLocation,
-		shoot.ShootType, shoot.Notes, repo.clock.Now()).Scan(&shoot.Id)
+	err = tx.QueryRow(ctx, query, shootToCreate.ShootDate,
+		shootToCreate.StartTime, shootToCreate.EndTime, shootToCreate.ShootPrice, shootToCreate.ShootLocation,
+		shootToCreate.ShootType, shootToCreate.Notes, shootToCreate.CreatedAt).Scan(&shootToCreate.Id)
 
 	if err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
 	}
 
 	err = repo.addAllClientsTx(ctx, tx, clients, shoot.Id)
 	if err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to add clients")
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to add clients")
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to commit transaction")
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to commit transaction")
 	}
 
-	return nil
+	return &shootToCreate, nil
 }
 
 func (repo *postgresShoot) addAllClientsTx(ctx context.Context, tx pgx.Tx, clients []*model.ShootClient, shootID int) error {

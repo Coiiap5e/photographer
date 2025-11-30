@@ -52,7 +52,7 @@ func main() {
 	shootRepo := repository.NewShoot(db, newClock)
 
 	clientService := service.NewClient(clientRepo, logger)
-	shootService := service.NewShoot(shootRepo, clientRepo, logger)
+	shootService := service.NewShoot(shootRepo, clientService, logger)
 
 	go func() {
 		sig := <-signalChan
