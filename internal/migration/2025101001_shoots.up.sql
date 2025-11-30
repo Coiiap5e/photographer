@@ -1,4 +1,4 @@
-CREATE TABLE shoots
+CREATE TABLE IF NOT EXISTS shoots
 (
     id SERIAL PRIMARY KEY,
     date DATE NOT NULL,

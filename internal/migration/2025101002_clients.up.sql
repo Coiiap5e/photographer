@@ -1,4 +1,4 @@
-CREATE TABLE clients
+CREATE TABLE IF NOT EXISTS clients
 (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,

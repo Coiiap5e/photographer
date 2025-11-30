@@ -1,4 +1,4 @@
-CREATE TABLE shoot_clients
+CREATE TABLE IF NOT EXISTS shoot_clients
 (
     shoot_id INTEGER REFERENCES shoots(id) ON DELETE CASCADE,
     client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
