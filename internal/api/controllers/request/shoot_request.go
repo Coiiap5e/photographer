@@ -1,13 +1,10 @@
-package model
+package request
 
-import "time"
+import (
+	"time"
 
-type CreateClientRequest struct {
-	FirstName        string `json:"first_name" binding:"required"`
-	LastName         string `json:"last_name" binding:"required"`
-	Phone            string `json:"phone"`
-	SocialNetworkUrl string `json:"social_network_url"`
-}
+	"github.com/Coiiap5e/photographer/internal/model"
+)
 
 type CreateShootRequest struct {
 	ShootDate     time.Time            `json:"shootDate" binding:"required"`
@@ -24,4 +21,16 @@ type ShootClientRequest struct {
 	ClientID         int    `json:"clientID" binding:"required"`
 	IsMainClient     bool   `json:"isMainClient" binding:"required"`
 	RelationshipType string `json:"relationshipType" binding:"required"`
+}
+
+func ToShootClientDomain(clientRequests []ShootClientRequest) []*model.ShootClient {
+	clients := make([]*model.ShootClient, len(clientRequests))
+	for i, clientRequest := range clientRequests {
+		clients[i] = &model.ShootClient{
+			ClientID:         clientRequest.ClientID,
+			IsMainClient:     clientRequest.IsMainClient,
+			RelationshipType: clientRequest.RelationshipType,
+		}
+	}
+	return clients
 }
