@@ -53,3 +53,18 @@ func (sc *ShootController) CreateShoot(ctx context.Context, req *request.CreateS
 
 	return response.ToShootResponse(createdShoot), nil
 }
+
+func (sc *ShootController) GetShootByID(ctx context.Context, id int) (*response.ShootResponse, error) {
+	if err := validators.ValidateID(id); err != nil {
+		return nil, err
+	}
+
+	shoot, err := sc.shootService.GetShootByID(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return response.ToShootResponse(shoot), nil
+
+}

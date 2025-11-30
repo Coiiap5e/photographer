@@ -29,3 +29,11 @@ func validateShootPrice(price int) error {
 
 	return nil
 }
+
+func ValidateID(id int) error {
+	if id < 0 {
+		return errors.New(errors.ErrCodeValidation, "id must be greater than zero")
+	}
+
+	return nil
+}

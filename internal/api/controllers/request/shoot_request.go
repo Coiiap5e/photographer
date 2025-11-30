@@ -23,6 +23,10 @@ type ShootClientRequest struct {
 	RelationshipType string `json:"relationshipType" binding:"required"`
 }
 
+type GetShootByIDRequest struct {
+	ID int `uri:"id" binding:"required, min=1"`
+}
+
 func ToShootClientDomain(clientRequests []ShootClientRequest) []*model.ShootClient {
 	clients := make([]*model.ShootClient, len(clientRequests))
 	for i, clientRequest := range clientRequests {
