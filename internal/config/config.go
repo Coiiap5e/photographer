@@ -9,6 +9,19 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type Config struct {
+	Server ServerConfig
+	DB     DbConfig
+}
+
+type ServerConfig struct {
+	Host         string
+	Port         int
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	IdleTimeout  time.Duration
+}
+
 type DbConfig struct {
 	Host     string
 	Port     int
@@ -68,22 +81,62 @@ func (b *PoolConfigBuilder) Build() PoolConfig {
 	return b.config
 }
 
-func LoadDBConfig() (DbConfig, error) {
+func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
-		return DbConfig{}, errors.New(
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "error loading .env file")
+	}
+
+	dbConfig, err := loadDBConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	serverConfig, err := loadServerConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Config{
+		Server: serverConfig,
+		DB:     *dbConfig,
+	}, nil
+}
+
+func loadServerConfig() (ServerConfig, error) {
+	port, err := strconv.Atoi(os.Getenv("APP_SERVER_PORT"))
+	if err != nil {
+		return ServerConfig{}, errors.New(errors.ErrCodeConfig, "invalid APP_SERVER_PORT")
+	}
+
+	readTimeout, _ := strconv.Atoi(os.Getenv("APP_SERVER_READ_TIMEOUT"))
+	writeTimeout, _ := strconv.Atoi(os.Getenv("APP_SERVER_WRITE_TIMEOUT"))
+	idleTimeout, _ := strconv.Atoi(os.Getenv("APP_SERVER_IDLE_TIMEOUT"))
+
+	return ServerConfig{
+		Host:         getEnv("APP_SERVER_HOST", "0.0.0.0"),
+		Port:         port,
+		ReadTimeout:  time.Duration(readTimeout) * time.Second,
+		WriteTimeout: time.Duration(writeTimeout) * time.Second,
+		IdleTimeout:  time.Duration(idleTimeout) * time.Second,
+	}, nil
+}
+
+func loadDBConfig() (*DbConfig, error) {
+	if err := godotenv.Load(); err != nil {
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "failed to load .env file",
 		)
 	}
 
 	if os.Getenv("APP_DB_HOST") == "" {
-		return DbConfig{}, errors.New(
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "APP_DB_HOST is required",
 		)
 	}
 
 	port, err := strconv.Atoi(os.Getenv("APP_DB_PORT"))
 	if err != nil {
-		return DbConfig{}, errors.New(
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "APP_DB_PORT must be an integer",
 		)
 	}
@@ -91,24 +144,24 @@ func LoadDBConfig() (DbConfig, error) {
 	//Checking required fields
 
 	if os.Getenv("APP_DB_USER") == "" {
-		return DbConfig{}, errors.New(
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "APP_DB_USER is required",
 		)
 	}
 
 	if os.Getenv("APP_DB_PASS") == "" {
-		return DbConfig{}, errors.New(
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "APP_DB_PASS is required",
 		)
 	}
 
 	if os.Getenv("APP_DB_NAME") == "" {
-		return DbConfig{}, errors.New(
+		return &DbConfig{}, errors.New(
 			errors.ErrCodeConfig, "APP_DB_NAME is required",
 		)
 	}
 
-	return DbConfig{
+	return &DbConfig{
 		Host:     getEnv("APP_DB_HOST", "localhost"),
 		Port:     port,
 		Username: os.Getenv("APP_DB_USER"),

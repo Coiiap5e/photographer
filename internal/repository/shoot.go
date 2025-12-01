@@ -56,7 +56,7 @@ RETURNING
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
 	}
 
-	err = repo.addAllClientsTx(ctx, tx, clients, shoot.Id)
+	err = repo.addAllClientsTx(ctx, tx, clients, shootToCreate.Id)
 	if err != nil {
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to add clients")
 	}

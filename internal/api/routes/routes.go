@@ -12,3 +12,10 @@ func SetupShootRoutes(router *gin.RouterGroup, shootHandler *handlers.ShootHandl
 		shoots.GET("/:id", shootHandler.GetShootByID)
 	}
 }
+
+func SetupClientRoutes(router *gin.RouterGroup, clientHandler *handlers.ClientHandler) {
+	clients := router.Group("/clients")
+	{
+		clients.POST("", clientHandler.CreateClient)
+	}
+}

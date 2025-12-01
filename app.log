@@ -27,3 +27,10 @@
 {"time":"2025-11-14T18:17:01.2179973+03:00","level":"INFO","msg":"client added","ID":7,"created at":"2025-11-14T15:17:01.215857Z"}
 {"time":"2025-11-14T18:18:05.8543201+03:00","level":"INFO","msg":"shoot added successfully"}
 {"time":"2025-11-14T18:19:09.9919544+03:00","level":"INFO","msg":"app end"}
+{"time":"2025-12-01T17:21:52.2690262+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:23:52.929561+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:32:34.7843402+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:33:24.7798953+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:43:27.3487364+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:50:43.3187563+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-01T17:55:15.2978537+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}

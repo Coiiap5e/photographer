@@ -14,7 +14,7 @@ type CreateShootRequest struct {
 	ShootLocation string               `json:"shootLocation"`
 	ShootType     string               `json:"shootType"`
 	Notes         string               `json:"notes"`
-	Clients       []ShootClientRequest `json:"clients" binding:"required, min=1"`
+	Clients       []ShootClientRequest `json:"clients" binding:"required,min=1"`
 }
 
 type ShootClientRequest struct {
@@ -24,7 +24,7 @@ type ShootClientRequest struct {
 }
 
 type GetShootByIDRequest struct {
-	ID int `uri:"id" binding:"required, min=1"`
+	ID int `uri:"id" binding:"required,min=1"`
 }
 
 func ToShootClientDomain(clientRequests []ShootClientRequest) []*model.ShootClient {

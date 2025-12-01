@@ -3,73 +3,42 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
+	"log"
 
-	cliapp "github.com/Coiiap5e/photographer/internal/app"
-	"github.com/Coiiap5e/photographer/internal/config"
-	"github.com/Coiiap5e/photographer/internal/database"
-	"github.com/Coiiap5e/photographer/internal/logs"
-	"github.com/Coiiap5e/photographer/internal/repository"
-	"github.com/Coiiap5e/photographer/internal/service"
-	"github.com/Coiiap5e/photographer/internal/utils/clock"
+	"github.com/Coiiap5e/photographer/internal/api/routes"
+	"github.com/Coiiap5e/photographer/internal/app/di"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	ctx := context.Background()
 
-	newClock := clock.NewInMoscow()
-
-	logger, closeLogger := logs.InitLogger()
-
-	defer closeLogger()
-
-	logger.Info("app starting")
-
-	signalChan := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-	dbConfig, err := config.LoadDBConfig()
+	container, err := di.NewContainer(ctx)
 	if err != nil {
-		fmt.Println("Db error! More information in logs")
-
-		logger.Error("configuration error", "error", err)
-		os.Exit(1)
+		log.Fatal("Failed to create DI container:", err)
 	}
 
-	db, err := database.NewClient(ctx, dbConfig)
-	if err != nil {
-		fmt.Println("Db error! More information in logs")
+	defer container.Close()
 
-		logger.Error("error create db connection", "error", err)
-		os.Exit(1)
+	router := gin.Default()
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "OK"})
+	})
+
+	api := router.Group("/api")
+	routes.SetupShootRoutes(api, container.Handlers.Shoot)
+	routes.SetupClientRoutes(api, container.Handlers.Client)
+
+	addr := fmt.Sprintf("%s:%d",
+		container.Config.Server.Host,
+		container.Config.Server.Port,
+	)
+
+	container.Logger.Info("Starting server", "address", addr)
+
+	if err = router.Run(addr); err != nil {
+		container.Logger.Error("Failed to start server", "error", err)
+		log.Fatal("Failed to start server:", err)
 	}
-	defer db.Close()
-
-	clientRepo := repository.NewClient(db, newClock)
-	shootRepo := repository.NewShoot(db, newClock)
-
-	clientService := service.NewClient(clientRepo, logger)
-	shootService := service.NewShoot(shootRepo, clientService, logger)
-
-	go func() {
-		sig := <-signalChan
-
-		fmt.Println("Got signal: ", sig)
-		logger.Info("got signal", "signal", sig.String())
-
-		done <- true
-	}()
-
-	app := cliapp.NewApp(clientService, shootService, logger)
-	go func() {
-		app.RunMenu(ctx)
-		done <- true
-	}()
-
-	<-done
-
-	logger.Info("app end")
 }

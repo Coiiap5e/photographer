@@ -17,6 +17,7 @@ const (
 	ErrCodeDBSelect      ErrorCode = "DB_SELECT_ERROR"
 	ErrCodeDBTransaction ErrorCode = "DB_TRANSACTION_ERROR"
 	ErrCodeDBScan        ErrorCode = "DB_SCAN_ERROR"
+	ErrCodeDBConfig      ErrorCode = "DB_CONFIG_ERROR"
 
 	// Client operations
 
