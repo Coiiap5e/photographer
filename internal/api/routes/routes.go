@@ -10,6 +10,7 @@ func SetupShootRoutes(router *gin.RouterGroup, shootHandler *handlers.ShootHandl
 	{
 		shoots.POST("", shootHandler.CreateShoot)
 		shoots.GET("/:id", shootHandler.GetShootByID)
+		shoots.DELETE("/:id", shootHandler.DeleteShoot)
 	}
 }
 

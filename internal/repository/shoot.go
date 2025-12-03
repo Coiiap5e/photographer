@@ -37,8 +37,7 @@ func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, cli
 	}
 	defer tx.Rollback(ctx)
 
-	shootToCreate := *shoot
-	shootToCreate.CreatedAt = repo.clock.Now()
+	createdAt := repo.clock.Now()
 
 	query := `
 INSERT INTO shoots
@@ -46,11 +45,14 @@ INSERT INTO shoots
 VALUES 
     ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING
-	id`
+	id, created_at`
+
+	shootToCreate := *shoot
+	shootToCreate.CreatedAt = createdAt
 
 	err = tx.QueryRow(ctx, query, shootToCreate.ShootDate,
 		shootToCreate.StartTime, shootToCreate.EndTime, shootToCreate.ShootPrice, shootToCreate.ShootLocation,
-		shootToCreate.ShootType, shootToCreate.Notes, shootToCreate.CreatedAt).Scan(&shootToCreate.Id)
+		shootToCreate.ShootType, shootToCreate.Notes, shootToCreate.CreatedAt).Scan(&shootToCreate.Id, &shootToCreate.CreatedAt)
 
 	if err != nil {
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
@@ -120,7 +122,7 @@ func (repo *postgresShoot) GetShootByID(ctx context.Context, id int) (*model.Sho
 	query := `
 SELECT 
 	id, date, start_time, end_time, 
-	shoot_price, location, shoot_type, notes
+	shoot_price, location, shoot_type, notes, created_at
 FROM shoots
 WHERE id = $1`
 
@@ -128,7 +130,7 @@ WHERE id = $1`
 	err := repo.db.Pool.QueryRow(ctx, query, id).Scan(
 		&shoot.Id, &shoot.ShootDate, &shoot.StartTime,
 		&shoot.EndTime, &shoot.ShootPrice, &shoot.ShootLocation,
-		&shoot.ShootType, &shoot.Notes)
+		&shoot.ShootType, &shoot.Notes, &shoot.CreatedAt)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -89,3 +89,37 @@ func (h *ShootHandler) GetShootByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *ShootHandler) DeleteShoot(c *gin.Context) {
+	var uriParams struct {
+		ID int `uri:"id" binding:"min=1"`
+	}
+
+	if err := c.ShouldBindUri(&uriParams); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "INVALID_REQUEST",
+			"message": "Invalid shoot ID",
+		})
+		return
+	}
+
+	err := h.shootController.DeleteShoot(c.Request.Context(), uriParams.ID)
+	if err != nil {
+		if errors.IsErrorCode(err, errors.ErrCodeShootNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error":   "SHOOT_NOT_FOUND",
+				"message": "Shoot not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "DELETE_SHOOT_ERROR",
+			"message": "Failed to delete shoot",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+
+}

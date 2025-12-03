@@ -20,7 +20,7 @@ func New(initialTime time.Time) *Clock {
 func (c *Clock) Now() time.Time {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.now
+	return time.Now().In(c.location)
 }
 
 func (c *Clock) After(d time.Duration) time.Time {

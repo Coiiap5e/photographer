@@ -68,3 +68,16 @@ func (sc *ShootController) GetShootByID(ctx context.Context, id int) (*response.
 	return response.ToShootResponse(shoot), nil
 
 }
+
+func (sc *ShootController) DeleteShoot(ctx context.Context, id int) error {
+	if err := validators.ValidateID(id); err != nil {
+		return err
+	}
+
+	err := sc.shootService.DeleteShoot(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -10,7 +10,6 @@ import (
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/internal/repository"
-	"github.com/Coiiap5e/photographer/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -71,18 +70,16 @@ func (s *postgresShoot) GetShootByID(ctx context.Context, id int) (*model.Shoot,
 }
 
 func (s *postgresShoot) DeleteShoot(ctx context.Context, id int) error {
-	for {
-		confirm := utils.InputStringRequired("Are you sure you want to delete the shoot? (y/n)")
-		if confirm == "n" || confirm == "N" {
-			return myerrors.New(myerrors.ErrCodeValidation, "deletion cancelled")
-		} else if confirm == "y" || confirm == "Y" {
-			break
-		} else {
-			fmt.Println("Press wrong button: enter (y/n)")
+	_, err := s.GetShootByID(ctx, id)
+
+	if err != nil {
+		if myerrors.IsErrorCode(err, myerrors.ErrCodeShootNotFound) {
+			return myerrors.Wrap(err, myerrors.ErrCodeShootNotFound, "shoot not found")
 		}
+		return myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoot")
 	}
 
-	err := s.shootRepo.DeleteShoot(ctx, id)
+	err = s.shootRepo.DeleteShoot(ctx, id)
 	if err != nil {
 		return err
 	}
