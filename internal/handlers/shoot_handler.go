@@ -120,6 +120,9 @@ func (h *ShootHandler) DeleteShoot(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Shoot deleted successfully",
+		"deleted": true,
+	})
 
 }
