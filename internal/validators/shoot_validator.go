@@ -39,7 +39,7 @@ func ValidateID(id int) error {
 }
 
 func ValidateDate(req *request.UpdateShootDateTimeRequest, clock *clock.Clock) error {
-	if req.ShootDate.After(clock.Now()) {
+	if req.ShootDate.Before(clock.Now()) {
 		return errors.New(errors.ErrCodeValidation, "shoot date must be in the future")
 	}
 

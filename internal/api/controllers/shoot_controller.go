@@ -122,6 +122,20 @@ func (sc *ShootController) GetShootByID(ctx context.Context, id int) (*response.
 
 }
 
+func (sc *ShootController) GetShoots(ctx context.Context) ([]*response.ShootResponse, error) {
+	shoots, err := sc.shootService.GetShoots(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	responseShoots := make([]*response.ShootResponse, 0)
+	for _, shoot := range shoots {
+		responseShoots = append(responseShoots, response.ToShootResponse(&shoot))
+	}
+
+	return responseShoots, nil
+}
+
 func (sc *ShootController) DeleteShoot(ctx context.Context, id int) error {
 	if err := validators.ValidateID(id); err != nil {
 		return err

@@ -190,6 +190,21 @@ func (h *ShootHandler) GetShootByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func (h *ShootHandler) GetShoots(c *gin.Context) {
+
+	response, err := h.shootController.GetShoots(c.Request.Context())
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "INTERNAL_ERROR",
+			"message": "Failed to get shoot",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
 func (h *ShootHandler) DeleteShoot(c *gin.Context) {
 	var uriParams struct {
 		ID int `uri:"id" binding:"min=1"`

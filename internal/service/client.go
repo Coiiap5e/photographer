@@ -13,7 +13,7 @@ import (
 )
 
 type Client interface {
-	CreateClient(ctx context.Context, client *model.Client) error
+	CreateClient(ctx context.Context, client *model.Client) (*model.Client, error)
 	DeleteClient(ctx context.Context, id int) error
 	GetClients(ctx context.Context) error
 	GetClientByID(ctx context.Context, id int) (*model.Client, error)
@@ -24,20 +24,20 @@ type postgresClient struct {
 	logger     *slog.Logger
 }
 
+func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) (*model.Client, error) {
+	client, err := c.clientRepo.AddClient(ctx, client)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 func NewClient(clientRepo repository.Client, logger *slog.Logger) Client {
 	return &postgresClient{
 		clientRepo: clientRepo,
 		logger:     logger,
 	}
-}
-
-func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) error {
-	err := c.clientRepo.AddClient(ctx, client)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *postgresClient) GetClientByID(ctx context.Context, id int) (*model.Client, error) {

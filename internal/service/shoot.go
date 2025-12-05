@@ -16,7 +16,7 @@ import (
 type Shoot interface {
 	CreateShoot(ctx context.Context, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	DeleteShoot(ctx context.Context, id int) error
-	GetShoots(ctx context.Context) error
+	GetShoots(ctx context.Context) ([]model.Shoot, error)
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
 	GetShootsWithRelationshipType(ctx context.Context, relationshipType string) error
 	GetShootsSortedByDate(ctx context.Context) error
@@ -129,15 +129,13 @@ func (s *postgresShoot) DeleteShoot(ctx context.Context, id int) error {
 	return nil
 }
 
-func (s *postgresShoot) GetShoots(ctx context.Context) error {
+func (s *postgresShoot) GetShoots(ctx context.Context) ([]model.Shoot, error) {
 	shoots, err := s.shootRepo.GetShoots(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	showShoots(shoots)
-
-	return nil
+	return shoots, nil
 }
 
 func (s *postgresShoot) GetShootsSortedByDate(ctx context.Context) error {

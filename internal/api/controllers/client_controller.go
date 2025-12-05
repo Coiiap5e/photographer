@@ -32,11 +32,11 @@ func (cc *ClientController) CreateClient(ctx context.Context, req *request.Creat
 		SocialNetworkUrl: req.SocialNetworkUrl,
 	}
 
-	err := cc.clientService.CreateClient(ctx, client)
+	createdClient, err := cc.clientService.CreateClient(ctx, client)
 	if err != nil {
 		return nil, err
 	}
 
-	return response.ToClientResponse(client), nil
+	return response.ToClientResponse(createdClient), nil
 
 }

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
@@ -271,12 +272,16 @@ WHERE id = $1`
 func (repo *postgresShoot) GetShoots(ctx context.Context) ([]model.Shoot, error) {
 	query := `
 SELECT 
-    id, date, start_time, end_time, 
-    shoot_price, location, shoot_type, notes, created_at
-FROM shoots
-ORDER BY date DESC, created_at DESC
+    s.id, s.date, s.start_time, s.end_time, 
+    s.shoot_price, s.location, s.shoot_type, s.notes, 
+    s.created_at, s.updated_at,
+    sc.client_id, sc.is_main_client, sc.relationship_type,
+    c.first_name, c.last_name, c.phone
+FROM shoots s
+INNER JOIN shoot_clients sc ON s.id = sc.shoot_id
+INNER JOIN clients c ON sc.client_id = c.id
+ORDER BY s.date DESC, s.created_at DESC
 `
-
 	rows, err := repo.db.Pool.Query(ctx, query)
 	if err != nil {
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots")
@@ -284,30 +289,71 @@ ORDER BY date DESC, created_at DESC
 
 	defer rows.Close()
 
+	shootsMap := make(map[int]*model.Shoot)
+
 	shoots := make([]model.Shoot, 0)
 
 	for rows.Next() {
-		var shoot model.Shoot
+		var (
+			shootID                         int
+			shootDate                       time.Time
+			startTime                       time.Time
+			endTime                         time.Time
+			shootPrice                      int
+			shootLocation, shootType, notes string
+			createdAt, updatedAt            time.Time
+			clientID                        int
+			isMainClient                    bool
+			relationshipType                string
+			firstName, lastName             string
+			phone                           string
+		)
 		err := rows.Scan(
-			&shoot.Id, &shoot.ShootDate, &shoot.StartTime,
-			&shoot.EndTime, &shoot.ShootPrice, &shoot.ShootLocation,
-			&shoot.ShootType, &shoot.Notes, &shoot.CreatedAt)
+			&shootID, &shootDate, &startTime, &endTime,
+			&shootPrice, &shootLocation, &shootType, &notes,
+			&createdAt, &updatedAt,
+			&clientID, &isMainClient, &relationshipType,
+			&firstName, &lastName, &phone,
+		)
 		if err != nil {
-			return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoot")
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to scan shoot")
 		}
-		shoots = append(shoots, shoot)
+
+		shoot, exists := shootsMap[shootID]
+		if !exists {
+			shoot = &model.Shoot{
+				Id:            shootID,
+				ShootDate:     shootDate,
+				StartTime:     startTime,
+				EndTime:       endTime,
+				ShootPrice:    shootPrice,
+				ShootLocation: shootLocation,
+				ShootType:     shootType,
+				Notes:         notes,
+				CreatedAt:     createdAt,
+				UpdatedAt:     updatedAt,
+				Clients:       make([]model.ShootClientInfo, 0),
+			}
+			shootsMap[shootID] = shoot
+		}
+
+		client := model.ShootClientInfo{
+			ClientID:         clientID,
+			FirstName:        firstName,
+			LastName:         lastName,
+			Phone:            phone,
+			IsMainClient:     isMainClient,
+			RelationshipType: relationshipType,
+		}
+		shoot.Clients = append(shoot.Clients, client)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "error during rows iteration")
 	}
 
-	for i := range shoots {
-		clients, err := repo.getShootClients(ctx, shoots[i].Id)
-		if err != nil {
-			return nil, err
-		}
-		shoots[i].Clients = clients
+	for _, shoot := range shootsMap {
+		shoots = append(shoots, *shoot)
 	}
 
 	return shoots, nil

@@ -12,8 +12,8 @@ import (
 )
 
 type Client interface {
-	AddClient(ctx context.Context, client *model.Client) error
 	DeleteClient(ctx context.Context, id int) error
+	AddClient(ctx context.Context, client *model.Client) (*model.Client, error)
 	GetClientByID(ctx context.Context, id int) (*model.Client, error)
 	GetClients(ctx context.Context) ([]model.Client, error)
 }
@@ -30,24 +30,29 @@ func NewClient(db *database.DB, clock *clock.Clock) Client {
 	}
 }
 
-func (repo *postgresClient) AddClient(ctx context.Context, client *model.Client) error {
+func (repo *postgresClient) AddClient(ctx context.Context, client *model.Client) (*model.Client, error) {
+	createdAt := repo.clock.Now()
 	query := `
 INSERT INTO clients 
     (first_name, last_name, phone, social_network_url, created_at) 
 VALUES 
     ($1, $2, $3, $4, $5) 
 RETURNING 
-    id`
+    id, created_at`
+
+	clientToCreate := *client
+	clientToCreate.CreatedAt = createdAt
 
 	err := repo.db.Pool.QueryRow(ctx, query,
-		client.FirstName, client.LastName, client.Phone, client.SocialNetworkUrl, repo.clock.Now()).
-		Scan(&client.Id)
+		clientToCreate.FirstName, clientToCreate.LastName, clientToCreate.Phone,
+		clientToCreate.SocialNetworkUrl, clientToCreate.CreatedAt).
+		Scan(&clientToCreate.Id, &clientToCreate.CreatedAt)
 
 	if err != nil {
-		return myerrors.Wrap(err, myerrors.ErrCodeClientCreate, "failed to create client")
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeClientCreate, "failed to create client")
 	}
 
-	return nil
+	return &clientToCreate, nil
 }
 
 func (repo *postgresClient) DeleteClient(ctx context.Context, id int) error {
