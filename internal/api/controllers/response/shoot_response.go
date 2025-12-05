@@ -16,6 +16,7 @@ type ShootResponse struct {
 	ShootType     string                    `json:"shotType"`
 	Notes         string                    `json:"notes"`
 	CreatedAt     time.Time                 `json:"createdAt"`
+	UpdatedAt     time.Time                 `json:"updatedAt"`
 	Clients       []ShootClientInfoResponse `json:"clients"`
 }
 
@@ -56,6 +57,7 @@ func ToShootResponse(shoot *model.Shoot) *ShootResponse {
 		ShootType:     shoot.ShootType,
 		Notes:         shoot.Notes,
 		CreatedAt:     shoot.CreatedAt,
+		UpdatedAt:     shoot.UpdatedAt,
 		Clients:       clients,
 	}
 }

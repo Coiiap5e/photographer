@@ -12,6 +12,13 @@ type Shoot struct {
 	ShootType     string
 	Notes         string
 	CreatedAt     time.Time
+	UpdatedAt     time.Time
 
 	Clients []ShootClientInfo
+}
+
+type ShootDateTimePatch struct {
+	ShootDate time.Time
+	StartTime time.Time
+	EndTime   time.Time
 }

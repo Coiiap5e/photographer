@@ -24,14 +24,14 @@ const (
 	ErrCodeClientNotFound ErrorCode = "CLIENT_NOT_FOUND"
 	ErrCodeClientCreate   ErrorCode = "CLIENT_CREATE_ERROR"
 	ErrCodeClientDelete   ErrorCode = "CLIENT_DELETE_ERROR"
-	ErrCodeClientList     ErrorCode = "CLIENT_LIST_ERROR"
+	ErrCodeClientUpdate   ErrorCode = "CLIENT_UPDATE_ERROR"
 
 	// Shoot operations
 
 	ErrCodeShootNotFound ErrorCode = "SHOOT_NOT_FOUND"
 	ErrCodeShootCreate   ErrorCode = "SHOOT_CREATE_ERROR"
 	ErrCodeShootDelete   ErrorCode = "SHOOT_DELETE_ERROR"
-	ErrCodeShootList     ErrorCode = "SHOOT_LIST_ERROR"
+	ErrCodeShootUpdate   ErrorCode = "SHOOT_UPDATE_ERROR"
 
 	// Validation
 

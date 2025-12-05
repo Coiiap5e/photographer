@@ -39,3 +39,6 @@
 {"time":"2025-12-03T19:01:54.1138863+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
 {"time":"2025-12-03T19:21:38.6387194+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
 {"time":"2025-12-03T19:24:57.0125547+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-04T17:55:23.5737996+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-04T18:05:17.6612738+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2025-12-04T18:08:21.5257644+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}

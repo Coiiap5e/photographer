@@ -16,6 +16,8 @@ type Shoot interface {
 	DeleteShoot(ctx context.Context, id int) error
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
 	GetShoots(ctx context.Context) ([]model.Shoot, error)
+	UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
+	UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error)
 }
 
 type postgresShoot struct {
@@ -38,6 +40,7 @@ func (repo *postgresShoot) AddShoot(ctx context.Context, shoot *model.Shoot, cli
 	defer tx.Rollback(ctx)
 
 	createdAt := repo.clock.Now()
+	updatedAt := repo.clock.Now()
 
 	query := `
 INSERT INTO shoots
@@ -49,6 +52,7 @@ RETURNING
 
 	shootToCreate := *shoot
 	shootToCreate.CreatedAt = createdAt
+	shootToCreate.UpdatedAt = updatedAt
 
 	err = tx.QueryRow(ctx, query, shootToCreate.ShootDate,
 		shootToCreate.StartTime, shootToCreate.EndTime, shootToCreate.ShootPrice, shootToCreate.ShootLocation,
@@ -68,6 +72,69 @@ RETURNING
 	}
 
 	return &shootToCreate, nil
+}
+
+func (repo *postgresShoot) UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error) {
+	tx, err := repo.db.Pool.Begin(ctx)
+	if err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to begin transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	updatedAt := repo.clock.Now()
+
+	query := `
+UPDATE shoots SET
+	date = $1,
+	start_time = $2,
+	end_time = $3,
+	shoot_price = $4,
+	location = $5,
+	shoot_type = $6,
+	notes = $7,
+	updated_at= $8
+WHERE
+    id = $9
+RETURNING
+	id, date, start_time, end_time, shoot_price, location, shoot_type, notes, created_at, updated_at`
+
+	updatedShoot := *shoot
+	updatedShoot.UpdatedAt = updatedAt
+
+	err = tx.QueryRow(ctx, query,
+		updatedShoot.ShootDate, updatedShoot.StartTime, updatedShoot.EndTime,
+		updatedShoot.ShootPrice, updatedShoot.ShootLocation,
+		updatedShoot.ShootType, updatedShoot.Notes, updatedShoot.UpdatedAt,
+		id,
+	).Scan(
+		&updatedShoot.Id, &updatedShoot.ShootDate, &updatedShoot.StartTime,
+		&updatedShoot.EndTime, &updatedShoot.ShootPrice, &updatedShoot.ShootLocation,
+		&updatedShoot.ShootType, &updatedShoot.Notes,
+		&updatedShoot.CreatedAt, &updatedShoot.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeShootNotFound, "shoot not found")
+		}
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootUpdate, "failed to update shoot")
+	}
+
+	_, err = tx.Exec(ctx, "DELETE FROM shoot_clients WHERE shoot_id = $1", updatedShoot.Id)
+	if err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to delete old clients")
+	}
+
+	err = repo.addAllClientsTx(ctx, tx, clients, updatedShoot.Id)
+	if err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to add clients")
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to commit transaction")
+	}
+
+	return &updatedShoot, nil
 }
 
 func (repo *postgresShoot) addAllClientsTx(ctx context.Context, tx pgx.Tx, clients []*model.ShootClient, shootID int) error {
@@ -100,6 +167,59 @@ Returning created_at`,
 	}
 
 	return results.Close()
+}
+
+func (repo *postgresShoot) UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error) {
+	tx, err := repo.db.Pool.Begin(ctx)
+	if err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to begin transaction")
+	}
+	defer tx.Rollback(ctx)
+
+	updatedAt := repo.clock.Now()
+	query := `
+UPDATE shoots SET
+    date = $1,
+    start_time = $2,
+    end_time = $3,
+    updated_at = $4
+WHERE id = $5
+RETURNING
+	id, date, start_time, end_time, shoot_price, location, shoot_type, notes, created_at, updated_at
+`
+	var updatedShoot model.Shoot
+
+	err = tx.QueryRow(ctx, query,
+		patch.ShootDate,
+		patch.StartTime,
+		patch.EndTime,
+		updatedAt,
+		id,
+	).Scan(
+		&updatedShoot.Id,
+		&updatedShoot.ShootDate,
+		&updatedShoot.StartTime,
+		&updatedShoot.EndTime,
+		&updatedShoot.ShootPrice,
+		&updatedShoot.ShootLocation,
+		&updatedShoot.ShootType,
+		&updatedShoot.Notes,
+		&updatedShoot.CreatedAt,
+		&updatedShoot.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeShootNotFound, "shoot not found")
+		}
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootUpdate, "failed to update shot")
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBTransaction, "failed to commit transaction")
+	}
+
+	return &updatedShoot, nil
 }
 
 func (repo *postgresShoot) DeleteShoot(ctx context.Context, id int) error {

@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS shoots
     location VARCHAR(255),
     shoot_type VARCHAR(100),
     notes TEXT,
-    created_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );

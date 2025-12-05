@@ -20,6 +20,8 @@ type Shoot interface {
 	GetShootByID(ctx context.Context, id int) (*model.Shoot, error)
 	GetShootsWithRelationshipType(ctx context.Context, relationshipType string) error
 	GetShootsSortedByDate(ctx context.Context) error
+	UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
+	UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error)
 }
 
 type postgresShoot struct {
@@ -55,6 +57,46 @@ func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, cli
 	}
 
 	return createdShoot, nil
+}
+
+func (s *postgresShoot) UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error) {
+	_, err := s.shootRepo.GetShootByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, client := range clients {
+		_, err = s.clientService.GetClientByID(ctx, client.ClientID)
+		if err != nil {
+			if myerrors.IsErrorCode(err, myerrors.ErrCodeClientNotFound) {
+				return nil, myerrors.New(myerrors.ErrCodeClientNotFound,
+					fmt.Sprintf("client with ID %d not found", client.ClientID))
+			}
+			return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect,
+				fmt.Sprintf("failed to get client with ID %d", client.ClientID))
+		}
+	}
+
+	updatedShoot, err := s.shootRepo.UpdateShoot(ctx, id, shoot, clients)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedShoot, nil
+}
+
+func (s *postgresShoot) UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error) {
+	_, err := s.shootRepo.GetShootByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedShoot, err := s.shootRepo.UpdateShootDateTime(ctx, id, patch)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedShoot, nil
 }
 
 func (s *postgresShoot) GetShootByID(ctx context.Context, id int) (*model.Shoot, error) {

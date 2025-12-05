@@ -17,6 +17,12 @@ type CreateShootRequest struct {
 	Clients       []ShootClientRequest `json:"clients" binding:"required,min=1"`
 }
 
+type UpdateShootDateTimeRequest struct {
+	ShootDate time.Time `json:"shootDate" binding:"required"`
+	StartTime time.Time `json:"startTime" binding:"required"`
+	EndTime   time.Time `json:"endTime" binding:"required"`
+}
+
 type ShootClientRequest struct {
 	ClientID         int    `json:"clientID" binding:"required"`
 	IsMainClient     bool   `json:"isMainClient" binding:"required"`
