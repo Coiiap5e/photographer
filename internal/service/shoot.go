@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
-	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/samber/lo"
 )
 

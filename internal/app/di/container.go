@@ -4,13 +4,12 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/api/controllers"
 	"github.com/Coiiap5e/photographer/internal/config"
-	"github.com/Coiiap5e/photographer/internal/database"
 	"github.com/Coiiap5e/photographer/internal/errors"
-	"github.com/Coiiap5e/photographer/internal/handlers"
+	"github.com/Coiiap5e/photographer/internal/infrastructure/database"
 	"github.com/Coiiap5e/photographer/internal/logs"
-	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/service"
 	"github.com/Coiiap5e/photographer/internal/utils/clock"
 )
@@ -23,7 +22,6 @@ type Container struct {
 	Services     *Services
 	Repositories *Repositories
 	Controllers  *Controllers
-	Handlers     *Handlers
 
 	closeLogger func()
 }
@@ -41,11 +39,6 @@ type Repositories struct {
 type Controllers struct {
 	Shoot  *controllers.ShootController
 	Client *controllers.ClientController
-}
-
-type Handlers struct {
-	Shoot  *handlers.ShootHandler
-	Client *handlers.ClientHandler
 }
 
 func NewContainer(ctx context.Context) (*Container, error) {
@@ -74,9 +67,6 @@ func NewContainer(ctx context.Context) (*Container, error) {
 	clientController := controllers.NewClientController(clientService)
 	shootController := controllers.NewShootController(shootService, clientService, newClock)
 
-	clientHandler := handlers.NewClientHandler(clientController)
-	shootHandler := handlers.NewShootHandler(shootController)
-
 	return &Container{
 		Config:      cfg,
 		DB:          db,
@@ -94,10 +84,6 @@ func NewContainer(ctx context.Context) (*Container, error) {
 		Controllers: &Controllers{
 			Shoot:  shootController,
 			Client: clientController,
-		},
-		Handlers: &Handlers{
-			Shoot:  shootHandler,
-			Client: clientHandler,
 		},
 	}, nil
 

@@ -27,8 +27,8 @@ func main() {
 	})
 
 	api := router.Group("/api")
-	routes.SetupShootRoutes(api, container.Handlers.Shoot)
-	routes.SetupClientRoutes(api, container.Handlers.Client)
+	routes.SetupShootRoutes(api, container.Controllers.Shoot)
+	routes.SetupClientRoutes(api, container.Controllers.Client)
 
 	addr := fmt.Sprintf("%s:%d",
 		container.Config.Server.Host,

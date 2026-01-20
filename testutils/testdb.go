@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Coiiap5e/photographer/internal/database"
 	"github.com/Coiiap5e/photographer/internal/errors"
+	"github.com/Coiiap5e/photographer/internal/infrastructure/database"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

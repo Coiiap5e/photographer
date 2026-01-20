@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
-	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/utils"
 )
 

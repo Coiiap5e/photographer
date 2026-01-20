@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Coiiap5e/photographer/internal/database"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
+	"github.com/Coiiap5e/photographer/internal/infrastructure/database"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/jackc/pgx/v5"

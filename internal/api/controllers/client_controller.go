@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"context"
+	"net/http"
 
 	"github.com/Coiiap5e/photographer/internal/api/controllers/request"
-	"github.com/Coiiap5e/photographer/internal/api/controllers/response"
+	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/internal/service"
 	"github.com/Coiiap5e/photographer/internal/validators"
+	"github.com/gin-gonic/gin"
 )
 
 type ClientController struct {
@@ -20,9 +21,23 @@ func NewClientController(clientService service.Client) *ClientController {
 	}
 }
 
-func (cc *ClientController) CreateClient(ctx context.Context, req *request.CreateClientRequest) (*response.ClientResponse, error) {
-	if err := validators.ValidateCreateClient(req); err != nil {
-		return nil, err
+func (cc *ClientController) CreateClient(c *gin.Context) {
+	var req request.CreateClientRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "INVALID_REQUEST",
+			"message": "Invalid request format: " + err.Error(),
+		})
+		return
+	}
+
+	if err := validators.ValidateCreateClient(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "VALIDATION_ERROR",
+			"message": err.Error(),
+		})
+		return
 	}
 
 	client := &model.Client{
@@ -32,11 +47,23 @@ func (cc *ClientController) CreateClient(ctx context.Context, req *request.Creat
 		SocialNetworkUrl: req.SocialNetworkUrl,
 	}
 
-	createdClient, err := cc.clientService.CreateClient(ctx, client)
+	createdClient, err := cc.clientService.CreateClient(c.Request.Context(), client)
 	if err != nil {
-		return nil, err
+		switch {
+		case errors.IsErrorCode(err, errors.ErrCodeClientCreate):
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"error":   "CREATE_CLIENT_ERROR",
+				"message": "Failed to create client",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "INTERNAL_ERROR",
+				"message": "Internal server error",
+			})
+		}
+		return
 	}
 
-	return response.ToClientResponse(createdClient), nil
-
+	c.JSON(http.StatusCreated, request.ToClientResponse(createdClient))
 }
+
