@@ -60,7 +60,8 @@ func (sc *ShootController) CreateShoot(c *gin.Context) {
 		Notes:         req.Notes,
 	}
 
-	createdShoot, err := sc.shootService.CreateShoot(c.Request.Context(), newShoot, clients)
+	ctx := c.Request.Context()
+	createdShoot, err := sc.shootService.CreateShoot(ctx, newShoot, clients)
 	if err != nil {
 		switch {
 		case errors.IsErrorCode(err, errors.ErrCodeClientNotFound):
@@ -132,7 +133,8 @@ func (sc *ShootController) UpdateShoot(c *gin.Context) {
 		Notes:         req.Notes,
 	}
 
-	updatedShoot, err := sc.shootService.UpdateShoot(c.Request.Context(), uriParams.ID, newShoot, clients)
+	ctx := c.Request.Context()
+	updatedShoot, err := sc.shootService.UpdateShoot(ctx, uriParams.ID, newShoot, clients)
 	if err != nil {
 		switch {
 		case errors.IsErrorCode(err, errors.ErrCodeClientNotFound):
@@ -198,7 +200,8 @@ func (sc *ShootController) UpdateShootDateTime(c *gin.Context) {
 		EndTime:   req.EndTime,
 	}
 
-	updatedShoot, err := sc.shootService.UpdateShootDateTime(c.Request.Context(), uriParams.ID, newUpdatedDateTime)
+	ctx := c.Request.Context()
+	updatedShoot, err := sc.shootService.UpdateShootDateTime(ctx, uriParams.ID, newUpdatedDateTime)
 	if err != nil {
 		switch {
 		case errors.IsErrorCode(err, errors.ErrCodeShootUpdate):
@@ -236,7 +239,8 @@ func (sc *ShootController) GetShootByID(c *gin.Context) {
 		return
 	}
 
-	shoot, err := sc.shootService.GetShootByID(c.Request.Context(), uriParams.ID)
+	ctx := c.Request.Context()
+	shoot, err := sc.shootService.GetShootByID(ctx, uriParams.ID)
 	if err != nil {
 		if errors.IsErrorCode(err, errors.ErrCodeShootNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -255,7 +259,8 @@ func (sc *ShootController) GetShootByID(c *gin.Context) {
 }
 
 func (sc *ShootController) GetShoots(c *gin.Context) {
-	shoots, err := sc.shootService.GetShoots(c.Request.Context())
+	ctx := c.Request.Context()
+	shoots, err := sc.shootService.GetShoots(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "INTERNAL_ERROR",
@@ -292,7 +297,8 @@ func (sc *ShootController) DeleteShoot(c *gin.Context) {
 		return
 	}
 
-	err := sc.shootService.DeleteShoot(c.Request.Context(), uriParams.ID)
+	ctx := c.Request.Context()
+	err := sc.shootService.DeleteShoot(ctx, uriParams.ID)
 	if err != nil {
 		if errors.IsErrorCode(err, errors.ErrCodeShootNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -314,4 +320,3 @@ func (sc *ShootController) DeleteShoot(c *gin.Context) {
 		"deleted": true,
 	})
 }
-

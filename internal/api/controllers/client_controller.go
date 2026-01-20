@@ -47,7 +47,8 @@ func (cc *ClientController) CreateClient(c *gin.Context) {
 		SocialNetworkUrl: req.SocialNetworkUrl,
 	}
 
-	createdClient, err := cc.clientService.CreateClient(c.Request.Context(), client)
+	ctx := c.Request.Context()
+	createdClient, err := cc.clientService.CreateClient(ctx, client)
 	if err != nil {
 		switch {
 		case errors.IsErrorCode(err, errors.ErrCodeClientCreate):
@@ -66,4 +67,3 @@ func (cc *ClientController) CreateClient(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, request.ToClientResponse(createdClient))
 }
-
