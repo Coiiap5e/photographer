@@ -22,6 +22,7 @@ type Shoot interface {
 	GetShootsSortedByDate(ctx context.Context) error
 	UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error)
+	GetShootsCountByDate(ctx context.Context, date time.Time) (int, error)
 }
 
 type postgresShoot struct {
@@ -219,4 +220,8 @@ func showShoots(shoots []model.Shoot) {
 		}
 	}
 
+}
+
+func (s *postgresShoot) GetShootsCountByDate(ctx context.Context, date time.Time) (int, error) {
+	return s.shootRepo.CountByDate(ctx, date)
 }

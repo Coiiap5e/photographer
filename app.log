@@ -1,48 +1,23 @@
-{"time":"2025-10-21T19:23:17.2551337+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Elena","client last name":"Magnus","!BADKEY":4}
-{"time":"2025-10-21T19:40:52.5084127+03:00","level":"INFO","msg":"client added","ID":5,"created at":"2025-10-21T16:40:52.506566Z"}
-{"time":"2025-10-21T19:41:08.3799554+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Ivan","client last name":"Ivanov","!BADKEY":5}
-{"time":"2025-10-21T20:17:51.9434895+03:00","level":"INFO","msg":"client added","ID":6,"created at":"2025-10-21T17:17:51.939217Z"}
-{"time":"2025-10-21T20:18:07.6488355+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Ivan","client last name":"Titov","client id":6}
-{"time":"2025-10-21T20:30:54.5309148+03:00","level":"INFO","msg":"app starting"}
-{"time":"2025-10-21T20:31:15.2353764+03:00","level":"INFO","msg":"client added","ID":7,"created at":"2025-10-21T17:31:15.234263Z"}
-{"time":"2025-10-21T20:31:26.9227399+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Iv","client last name":"IVasd","client id":7}
-{"time":"2025-10-21T20:31:44.8818822+03:00","level":"INFO","msg":"client added","ID":8,"created at":"2025-10-21T17:31:44.879619Z"}
-{"time":"2025-10-21T20:31:48.0239284+03:00","level":"INFO","msg":"app end"}
-{"time":"2025-10-29T19:11:26.7426717+03:00","level":"INFO","msg":"app starting"}
-{"time":"2025-10-29T19:12:07.1005934+03:00","level":"INFO","msg":"app end"}
-{"time":"2025-11-14T17:45:11.2107141+03:00","level":"INFO","msg":"app starting"}
-{"time":"2025-11-14T17:49:18.5321396+03:00","level":"INFO","msg":"client added","ID":1,"created at":"2025-11-14T14:49:18.527398Z"}
-{"time":"2025-11-14T17:49:57.8521818+03:00","level":"INFO","msg":"client added","ID":2,"created at":"2025-11-14T14:49:57.850498Z"}
-{"time":"2025-11-14T17:50:52.8944605+03:00","level":"INFO","msg":"client added","ID":3,"created at":"2025-11-14T14:50:52.892454Z"}
-{"time":"2025-11-14T17:51:06.067039+03:00","level":"INFO","msg":"client added","ID":4,"created at":"2025-11-14T14:51:06.06566Z"}
-{"time":"2025-11-14T17:51:20.6002964+03:00","level":"INFO","msg":"client added","ID":5,"created at":"2025-11-14T14:51:20.598409Z"}
-{"time":"2025-11-14T17:55:15.3141527+03:00","level":"INFO","msg":"shoot added successfully"}
-{"time":"2025-11-14T17:57:09.4906517+03:00","level":"INFO","msg":"app end"}
-{"time":"2025-11-14T18:11:05.7707874+03:00","level":"INFO","msg":"app starting"}
-{"time":"2025-11-14T18:13:39.3911989+03:00","level":"INFO","msg":"shoot added successfully"}
-{"time":"2025-11-14T18:14:15.3272433+03:00","level":"INFO","msg":"shoot deleted successfully","start date":"01.01.2000 16:00"}
-{"time":"2025-11-14T18:14:38.0311055+03:00","level":"INFO","msg":"client deleted successfully","client first name":"Alina","client last name":"Olegovna","client id":1}
-{"time":"2025-11-14T18:15:07.6004493+03:00","level":"INFO","msg":"client added","ID":6,"created at":"2025-11-14T15:15:07.598865Z"}
-{"time":"2025-11-14T18:16:04.1321721+03:00","level":"INFO","msg":"shoot added successfully"}
-{"time":"2025-11-14T18:17:01.2179973+03:00","level":"INFO","msg":"client added","ID":7,"created at":"2025-11-14T15:17:01.215857Z"}
-{"time":"2025-11-14T18:18:05.8543201+03:00","level":"INFO","msg":"shoot added successfully"}
-{"time":"2025-11-14T18:19:09.9919544+03:00","level":"INFO","msg":"app end"}
-{"time":"2025-12-01T17:21:52.2690262+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:23:52.929561+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:32:34.7843402+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:33:24.7798953+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:43:27.3487364+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:50:43.3187563+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T17:55:15.2978537+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-01T18:04:03.5086713+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-02T15:42:30.9016161+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-03T19:01:54.1138863+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-03T19:21:38.6387194+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-03T19:24:57.0125547+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-04T17:55:23.5737996+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-04T18:05:17.6612738+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-04T18:08:21.5257644+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-05T16:09:29.1216464+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-05T16:14:29.5750197+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-05T16:51:43.9246079+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
-{"time":"2025-12-05T17:00:03.8645263+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2026-01-22T21:51:41.4063483+03:00","level":"INFO","msg":"starting scheduler"}
+{"time":"2026-01-22T21:51:41.4280714+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2026-01-22T21:52:41.4444081+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T21:53:41.4274939+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T21:54:41.4265665+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T21:55:41.4268471+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T21:58:18.3269593+03:00","level":"INFO","msg":"starting scheduler"}
+{"time":"2026-01-22T21:58:18.3475732+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2026-01-22T21:59:18.3472691+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:00:27.3631834+03:00","level":"INFO","msg":"starting scheduler"}
+{"time":"2026-01-22T22:00:27.3881825+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2026-01-22T22:01:27.386709+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:02:27.3878167+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:03:27.3870103+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:04:27.3864371+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:05:27.3863404+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:05:59.1512444+03:00","level":"INFO","msg":"starting scheduler"}
+{"time":"2026-01-22T22:05:59.1712461+03:00","level":"INFO","msg":"Starting server","address":"0.0.0.0:8080"}
+{"time":"2026-01-22T22:06:46.4306351+03:00","level":"INFO","msg":"request completed","method":"GET","path":"/health","ip":"::1","user-agent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; ru-RU) WindowsPowerShell/5.1.19041.6456","status":200,"latency":0}
+{"time":"2026-01-22T22:06:59.1716914+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:07:59.1713759+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:08:59.1704851+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-01-22T22:09:59.1710621+03:00","level":"INFO","msg":"today's shoots count","count":0}

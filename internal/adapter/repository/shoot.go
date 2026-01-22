@@ -19,6 +19,7 @@ type Shoot interface {
 	GetShoots(ctx context.Context) ([]model.Shoot, error)
 	UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error)
+	CountByDate(ctx context.Context, date time.Time) (int, error)
 }
 
 type postgresShoot struct {
@@ -357,6 +358,21 @@ ORDER BY s.date DESC, s.created_at DESC
 	}
 
 	return shoots, nil
+}
+
+func (repo *postgresShoot) CountByDate(ctx context.Context, date time.Time) (int, error) {
+	query := `
+SELECT
+	count(*)
+FROM shoots
+WHERE date = $1`
+
+	var count int
+	err := repo.db.Pool.QueryRow(ctx, query, date).Scan(&count)
+	if err != nil {
+		return 0, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots count by date")
+	}
+	return count, nil
 }
 
 func (repo *postgresShoot) getShootClients(ctx context.Context, shootID int) ([]model.ShootClientInfo, error) {

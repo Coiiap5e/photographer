@@ -6,6 +6,7 @@ import (
 
 	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/api/controllers"
+	"github.com/Coiiap5e/photographer/internal/app"
 	"github.com/Coiiap5e/photographer/internal/config"
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/infrastructure/database"
@@ -22,6 +23,7 @@ type Container struct {
 	Services     *Services
 	Repositories *Repositories
 	Controllers  *Controllers
+	Scheduler    *app.Scheduler
 
 	closeLogger func()
 }
@@ -42,51 +44,52 @@ type Controllers struct {
 }
 
 func NewContainer(ctx context.Context) (*Container, error) {
-	newClock := clock.NewInMoscow()
+	container := &Container{}
 
-	logger, closeLogger := logs.InitLogger()
+	container.Clock = clock.NewInMoscow()
+
+	container.Logger, container.closeLogger = logs.InitLogger()
 
 	cfg, err := config.Load()
 	if err != nil {
-		closeLogger()
+		container.closeLogger()
 		return nil, errors.Wrap(err, errors.ErrCodeDBConfig, "configuration error")
 	}
+	container.Config = cfg
 
 	db, err := database.NewClient(ctx, cfg.DB)
 	if err != nil {
-		closeLogger()
+		container.closeLogger()
 		return nil, errors.Wrap(err, errors.ErrCodeDBConnection, "error create db connection")
 	}
+	container.DB = db
 
-	clientRepo := repository.NewClient(db, newClock)
-	shootRepo := repository.NewShoot(db, newClock)
+	clientRepo := repository.NewClient(db, container.Clock)
+	shootRepo := repository.NewShoot(db, container.Clock)
 
-	clientService := service.NewClient(clientRepo, logger)
-	shootService := service.NewShoot(shootRepo, clientService, logger)
+	container.Repositories = &Repositories{
+		Client: clientRepo,
+		Shoot:  shootRepo,
+	}
 
-	clientController := controllers.NewClientController(clientService)
-	shootController := controllers.NewShootController(shootService, clientService, newClock)
+	clientService := service.NewClient(clientRepo, container.Logger)
+	shootService := service.NewShoot(shootRepo, clientService, container.Logger)
 
-	return &Container{
-		Config:      cfg,
-		DB:          db,
-		Clock:       newClock,
-		Logger:      logger,
-		closeLogger: closeLogger,
-		Services: &Services{
-			Shoot:  shootService,
-			Client: clientService,
-		},
-		Repositories: &Repositories{
-			Shoot:  shootRepo,
-			Client: clientRepo,
-		},
-		Controllers: &Controllers{
-			Shoot:  shootController,
-			Client: clientController,
-		},
-	}, nil
+	container.Services = &Services{
+		Client: clientService,
+		Shoot:  shootService,
+	}
 
+	clientController := controllers.NewClientController(container.Services.Client)
+	shootController := controllers.NewShootController(container.Services.Shoot, container.Services.Client, container.Clock)
+	container.Controllers = &Controllers{
+		Client: clientController,
+		Shoot:  shootController,
+	}
+
+	container.Scheduler = app.NewScheduler(container.Logger, container.Services.Shoot, container.Clock)
+
+	return container, nil
 }
 
 func (c *Container) Close() {

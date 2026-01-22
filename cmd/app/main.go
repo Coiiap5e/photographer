@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Coiiap5e/photographer/internal/api/middleware"
 	"github.com/Coiiap5e/photographer/internal/api/routes"
 	"github.com/Coiiap5e/photographer/internal/app/di"
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,11 @@ func main() {
 
 	defer container.Close()
 
-	router := gin.Default()
+	container.Scheduler.Start()
+
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(middleware.Logger(container.Logger))
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "OK"})
