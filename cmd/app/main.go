@@ -26,6 +26,7 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(middleware.Logger(container.Logger))
+	router.Use(middleware.ErrorHandler())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "OK"})
