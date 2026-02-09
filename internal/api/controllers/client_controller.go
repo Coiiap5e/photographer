@@ -3,8 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Coiiap5e/photographer/internal/api/controllers/request"
-	"github.com/Coiiap5e/photographer/internal/errors"
+	"github.com/Coiiap5e/photographer/internal/api/controllers/dto"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/internal/service"
 	"github.com/Coiiap5e/photographer/internal/validators"
@@ -22,21 +21,15 @@ func NewClientController(clientService service.Client) *ClientController {
 }
 
 func (cc *ClientController) CreateClient(c *gin.Context) {
-	var req request.CreateClientRequest
+	var req dto.CreateClientRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid request format: " + err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	if err := validators.ValidateCreateClient(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
@@ -50,20 +43,9 @@ func (cc *ClientController) CreateClient(c *gin.Context) {
 	ctx := c.Request.Context()
 	createdClient, err := cc.clientService.CreateClient(ctx, client)
 	if err != nil {
-		switch {
-		case errors.IsErrorCode(err, errors.ErrCodeClientCreate):
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   "CREATE_CLIENT_ERROR",
-				"message": "Failed to create client",
-			})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "INTERNAL_ERROR",
-				"message": "Internal server error",
-			})
-		}
+		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, request.ToClientResponse(createdClient))
+	c.JSON(http.StatusCreated, dto.ToClientResponse(createdClient))
 }

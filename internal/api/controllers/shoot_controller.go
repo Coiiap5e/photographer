@@ -3,8 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/Coiiap5e/photographer/internal/api/controllers/request"
-	"github.com/Coiiap5e/photographer/internal/errors"
+	"github.com/Coiiap5e/photographer/internal/api/controllers/dto"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/Coiiap5e/photographer/internal/service"
 	"github.com/Coiiap5e/photographer/internal/utils/clock"
@@ -31,24 +30,18 @@ func NewShootController(
 }
 
 func (sc *ShootController) CreateShoot(c *gin.Context) {
-	var req request.CreateShootRequest
+	var req dto.CreateShootRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid request format: " + err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 	if err := validators.ValidateCreateShoot(&req, sc.clock); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
-	clients := request.ToShootClientDomain(req.Clients)
+	clients := dto.ToShootClientDomain(req.Clients)
 
 	newShoot := &model.Shoot{
 		ShootDate:     req.ShootDate,
@@ -63,27 +56,11 @@ func (sc *ShootController) CreateShoot(c *gin.Context) {
 	ctx := c.Request.Context()
 	createdShoot, err := sc.shootService.CreateShoot(ctx, newShoot, clients)
 	if err != nil {
-		switch {
-		case errors.IsErrorCode(err, errors.ErrCodeClientNotFound):
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "CLIENT_NOT_FOUND",
-				"message": err.Error(),
-			})
-		case errors.IsErrorCode(err, errors.ErrCodeShootCreate):
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   "CREATE_SHOOT_ERROR",
-				"message": "Failed to create shoot",
-			})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "INTERNAL_ERROR",
-				"message": "Internal server error",
-			})
-		}
+		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, request.ToShootResponse(createdShoot))
+	c.JSON(http.StatusCreated, dto.ToShootResponse(createdShoot))
 }
 
 func (sc *ShootController) UpdateShoot(c *gin.Context) {
@@ -91,37 +68,25 @@ func (sc *ShootController) UpdateShoot(c *gin.Context) {
 		ID int `uri:"id" binding:"min=1"`
 	}
 	if err := c.ShouldBindUri(&uriParams); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid shoot ID in URL",
-		})
+		_ = c.Error(err)
 		return
 	}
 
-	var req request.CreateShootRequest
+	var req dto.CreateShootRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid request format: " + err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 	if err := validators.ValidateCreateShoot(&req, sc.clock); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 	if err := validators.ValidateID(uriParams.ID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
-	clients := request.ToShootClientDomain(req.Clients)
+	clients := dto.ToShootClientDomain(req.Clients)
 
 	newShoot := &model.Shoot{
 		ShootDate:     req.ShootDate,
@@ -136,27 +101,11 @@ func (sc *ShootController) UpdateShoot(c *gin.Context) {
 	ctx := c.Request.Context()
 	updatedShoot, err := sc.shootService.UpdateShoot(ctx, uriParams.ID, newShoot, clients)
 	if err != nil {
-		switch {
-		case errors.IsErrorCode(err, errors.ErrCodeClientNotFound):
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "CLIENT_NOT_FOUND",
-				"message": err.Error(),
-			})
-		case errors.IsErrorCode(err, errors.ErrCodeShootUpdate):
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   "UPDATE_SHOOT_ERROR",
-				"message": "Failed to update shoot",
-			})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "INTERNAL_ERROR",
-				"message": "Internal server error",
-			})
-		}
+		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, request.ToShootResponse(updatedShoot))
+	c.JSON(http.StatusOK, dto.ToShootResponse(updatedShoot))
 }
 
 func (sc *ShootController) UpdateShootDateTime(c *gin.Context) {
@@ -164,33 +113,21 @@ func (sc *ShootController) UpdateShootDateTime(c *gin.Context) {
 		ID int `uri:"id" binding:"min=1"`
 	}
 	if err := c.ShouldBindUri(&uriParams); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid shoot ID in URL",
-		})
+		_ = c.Error(err)
 		return
 	}
 
-	var req request.UpdateShootDateTimeRequest
+	var req dto.UpdateShootDateTimeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid request format: " + err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 	if err := validators.ValidateDate(&req, sc.clock); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 	if err := validators.ValidateID(uriParams.ID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
@@ -203,75 +140,45 @@ func (sc *ShootController) UpdateShootDateTime(c *gin.Context) {
 	ctx := c.Request.Context()
 	updatedShoot, err := sc.shootService.UpdateShootDateTime(ctx, uriParams.ID, newUpdatedDateTime)
 	if err != nil {
-		switch {
-		case errors.IsErrorCode(err, errors.ErrCodeShootUpdate):
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   "UPDATE_SHOOT_ERROR",
-				"message": "Failed to update shoot",
-			})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "INTERNAL_ERROR",
-				"message": "Internal server error",
-			})
-		}
+		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, request.ToShootResponse(updatedShoot))
+	c.JSON(http.StatusOK, dto.ToShootResponse(updatedShoot))
 }
 
 func (sc *ShootController) GetShootByID(c *gin.Context) {
-	var uriParams request.GetShootByIDRequest
+	var uriParams dto.GetShootByIDRequest
 	if err := c.ShouldBindUri(&uriParams); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid shoot ID",
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	if err := validators.ValidateID(uriParams.ID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	ctx := c.Request.Context()
 	shoot, err := sc.shootService.GetShootByID(ctx, uriParams.ID)
 	if err != nil {
-		if errors.IsErrorCode(err, errors.ErrCodeShootNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "SHOT_NOT_FOUND",
-				"message": "Shoot not found",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "INTERNAL_ERROR",
-			"message": "Failed to get shoot",
-		})
+		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, request.ToShootResponse(shoot))
+	c.JSON(http.StatusOK, dto.ToShootResponse(shoot))
 }
 
 func (sc *ShootController) GetShoots(c *gin.Context) {
 	ctx := c.Request.Context()
 	shoots, err := sc.shootService.GetShoots(ctx)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "INTERNAL_ERROR",
-			"message": "Failed to get shoot",
-		})
+		_ = c.Error(err)
 		return
 	}
 
-	responseShoots := make([]*request.ShootResponse, 0)
+	responseShoots := make([]*dto.ShootResponse, 0)
 	for _, shoot := range shoots {
-		responseShoots = append(responseShoots, request.ToShootResponse(&shoot))
+		responseShoots = append(responseShoots, dto.ToShootResponse(&shoot))
 	}
 
 	c.JSON(http.StatusOK, responseShoots)
@@ -282,36 +189,19 @@ func (sc *ShootController) DeleteShoot(c *gin.Context) {
 		ID int `uri:"id" binding:"min=1"`
 	}
 	if err := c.ShouldBindUri(&uriParams); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "INVALID_REQUEST",
-			"message": "Invalid shoot ID",
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	if err := validators.ValidateID(uriParams.ID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "VALIDATION_ERROR",
-			"message": err.Error(),
-		})
+		_ = c.Error(err)
 		return
 	}
 
 	ctx := c.Request.Context()
 	err := sc.shootService.DeleteShoot(ctx, uriParams.ID)
 	if err != nil {
-		if errors.IsErrorCode(err, errors.ErrCodeShootNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "SHOOT_NOT_FOUND",
-				"message": "Shoot not found",
-			})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "DELETE_SHOOT_ERROR",
-			"message": "Failed to delete shoot",
-		})
+		_ = c.Error(err)
 		return
 	}
 

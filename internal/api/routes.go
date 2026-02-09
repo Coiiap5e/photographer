@@ -1,4 +1,4 @@
-package routes
+package api
 
 import (
 	"github.com/Coiiap5e/photographer/internal/api/controllers"

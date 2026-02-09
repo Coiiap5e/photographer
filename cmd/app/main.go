@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Coiiap5e/photographer/internal/api"
 	"github.com/Coiiap5e/photographer/internal/api/middleware"
-	"github.com/Coiiap5e/photographer/internal/api/routes"
 	"github.com/Coiiap5e/photographer/internal/app/di"
 	"github.com/gin-gonic/gin"
 )
@@ -31,9 +31,9 @@ func main() {
 		c.JSON(200, gin.H{"status": "OK"})
 	})
 
-	api := router.Group("/api")
-	routes.SetupShootRoutes(api, container.Controllers.Shoot)
-	routes.SetupClientRoutes(api, container.Controllers.Client)
+	apiGroup := router.Group("/api")
+	api.SetupShootRoutes(apiGroup, container.Controllers.Shoot)
+	api.SetupClientRoutes(apiGroup, container.Controllers.Client)
 
 	addr := fmt.Sprintf("%s:%d",
 		container.Config.Server.Host,
