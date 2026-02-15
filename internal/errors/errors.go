@@ -38,6 +38,12 @@ const (
 	ErrCodeValidation   ErrorCode = "VALIDATION_ERROR"
 	ErrCodeInvalidInput ErrorCode = "INVALID_INPUT_ERROR"
 
+	// External Services
+	ErrCodeCurrencyAPIRequest  ErrorCode = "CURRENCY_API_REQUEST_ERROR"
+	ErrCodeCurrencyAPIResponse ErrorCode = "CURRENCY_API_RESPONSE_ERROR"
+	ErrCodeCurrencyAPIParsing  ErrorCode = "CURRENCY_API_PARSING_ERROR"
+	ErrCodeCurrencyNotFound    ErrorCode = "CURRENCY_NOT_FOUND"
+
 	//Configuration
 
 	ErrCodeConfig ErrorCode = "CONFIG_ERROR"

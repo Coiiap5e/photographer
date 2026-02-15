@@ -3,7 +3,8 @@ package app
 import (
 	"context"
 	"log/slog"
-	"time"
+
+	"github.com/robfig/cron/v3"
 
 	"github.com/Coiiap5e/photographer/internal/service"
 	"github.com/Coiiap5e/photographer/internal/utils/clock"
@@ -13,29 +14,39 @@ type Scheduler struct {
 	logger       *slog.Logger
 	shootService service.Shoot
 	clock        *clock.Clock
+	cron         *cron.Cron
 }
 
 func NewScheduler(logger *slog.Logger, shootService service.Shoot, clock *clock.Clock) *Scheduler {
+
+	stdLogger := slog.NewLogLogger(logger.With("component", "cron").Handler(), slog.LevelInfo)
+
+	c := cron.New(cron.WithLogger(cron.PrintfLogger(stdLogger)))
 	return &Scheduler{
 		logger:       logger,
 		shootService: shootService,
 		clock:        clock,
+		cron:         c,
 	}
 }
 
 func (s *Scheduler) Start() {
-	s.logger.Info("starting scheduler")
-	go func() {
-		ticker := time.NewTicker(1 * time.Minute)
-		defer ticker.Stop()
+	s.logger.Info("starting cron scheduler")
 
-		for {
-			select {
-			case <-ticker.C:
-				s.logTodayShootsCount()
-			}
-		}
-	}()
+	_, err := s.cron.AddFunc("0 * * * *", func() {
+		s.logTodayShootsCount()
+	})
+	if err != nil {
+		s.logger.Error("failed to schedule logTodayShootsCount", "error", err)
+		return
+	}
+
+	s.cron.Start()
+}
+
+func (s *Scheduler) Stop() {
+	s.logger.Info("stopping cron scheduler")
+	s.cron.Stop()
 }
 
 func (s *Scheduler) logTodayShootsCount() {

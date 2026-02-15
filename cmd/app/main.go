@@ -22,6 +22,7 @@ func main() {
 	defer container.Close()
 
 	container.Scheduler.Start()
+	defer container.Scheduler.Stop()
 
 	router := gin.New()
 	router.Use(gin.Recovery())
