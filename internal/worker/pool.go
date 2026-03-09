@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"log/slog"
 	"sync"
 )
@@ -27,34 +28,46 @@ func NewPool(workers int, queueSize int, logger *slog.Logger) *Pool {
 	}
 }
 
-// Start starts the worker pool.
-func (p *Pool) Start() {
+// Run starts the worker pool and blocks until the context is cancelled.
+func (p *Pool) Run(ctx context.Context) error {
 	p.logger.Info("starting worker pool", "workers", p.workers)
+
 	for i := 0; i < p.workers; i++ {
 		p.wg.Add(1)
 		go func(workerID int) {
 			defer p.wg.Done()
 			p.logger.Info("worker started", "worker_id", workerID)
-			for job := range p.jobQueue {
-				p.logger.Info("worker received job", "worker_id", workerID)
-				job.Execute()
-				p.logger.Info("worker finished job", "worker_id", workerID)
+			for {
+				select {
+				case job, ok := <-p.jobQueue:
+					if !ok {
+						p.logger.Info("worker stopped (job queue closed)", "worker_id", workerID)
+						return
+					}
+					p.logger.Info("worker received job", "worker_id", workerID)
+					job.Execute()
+					p.logger.Info("worker finished job", "worker_id", workerID)
+				case <-ctx.Done():
+					p.logger.Info("worker stopped (context cancelled)", "worker_id", workerID)
+					return
+				}
 			}
-			p.logger.Info("worker stopped", "worker_id", workerID)
 		}(i + 1)
 	}
+
+	// Wait for context cancellation to initiate shutdown.
+	<-ctx.Done()
+
+	p.logger.Info("stopping worker pool (context cancelled)")
+	close(p.jobQueue)
+	p.wg.Wait()
+	p.logger.Info("worker pool stopped")
+
+	return nil
 }
 
 // Submit submits a job to the worker pool.
 func (p *Pool) Submit(job Job) {
 	p.logger.Info("submitting job")
 	p.jobQueue <- job
-}
-
-// Stop stops the worker pool gracefully.
-func (p *Pool) Stop() {
-	p.logger.Info("stopping worker pool")
-	close(p.jobQueue)
-	p.wg.Wait()
-	p.logger.Info("worker pool stopped")
 }

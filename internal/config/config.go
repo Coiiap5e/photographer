@@ -94,17 +94,17 @@ func Load() (*Config, error) {
 
 	dbConfig, err := loadDBConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load DB config")
 	}
 
 	serverConfig, err := loadServerConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load server config")
 	}
 
 	telegramConfig, err := loadTelegramConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load telegram config")
 	}
 
 	return &Config{

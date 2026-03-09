@@ -27,7 +27,7 @@ type postgresClient struct {
 func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) (*model.Client, error) {
 	client, err := c.clientRepo.AddClient(ctx, client)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errors.ErrCodeClientCreate, "failed to create client")
 	}
 
 	return client, nil
@@ -66,7 +66,7 @@ func (c *postgresClient) DeleteClient(ctx context.Context, id int) error {
 
 	err := c.clientRepo.DeleteClient(ctx, id)
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.ErrCodeClientDelete, "failed to delete client")
 	}
 
 	return nil
@@ -75,7 +75,7 @@ func (c *postgresClient) DeleteClient(ctx context.Context, id int) error {
 func (c *postgresClient) GetClients(ctx context.Context) error {
 	clients, err := c.clientRepo.GetClients(ctx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.ErrCodeDBSelect, "failed to get clients")
 	}
 
 	showClients(clients)

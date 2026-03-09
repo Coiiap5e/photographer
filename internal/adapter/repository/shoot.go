@@ -263,7 +263,7 @@ WHERE id = $1`
 
 	clients, err := repo.getShootClients(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get clients for shoot")
 	}
 
 	shoot.Clients = clients

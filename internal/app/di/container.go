@@ -80,7 +80,7 @@ func NewContainer(ctx context.Context) (*Container, error) {
 	}
 
 	container.RealCurrencyService = currency.NewService()
-	container.CachedCurrencyService = currency.NewInMemoryCacheService()
+	container.CachedCurrencyService = currency.NewInMemoryCacheService("cache/usd_rate.txt", container.Logger)
 
 	clientService := service.NewClient(clientRepo, container.Logger)
 	shootService := service.NewShoot(shootRepo, clientService, container.CachedCurrencyService, container.Logger, container.Clock)
@@ -105,7 +105,6 @@ func NewContainer(ctx context.Context) (*Container, error) {
 	}
 
 	container.WorkerPool = worker.NewPool(3, 10, container.Logger)
-	container.WorkerPool.Start()
 
 	container.Scheduler = app.NewScheduler(
 		container.Logger,
@@ -121,8 +120,6 @@ func NewContainer(ctx context.Context) (*Container, error) {
 }
 
 func (c *Container) Close() {
-	c.Scheduler.Stop()
-	c.WorkerPool.Stop()
 	c.DB.Close()
 
 	if c.closeLogger != nil {

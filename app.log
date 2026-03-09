@@ -32,3 +32,136 @@
 {"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker stopped","worker_id":2}
 {"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker stopped","worker_id":1}
 {"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker pool stopped"}
+{"time":"2026-03-09T14:34:12.4122503+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T14:34:12.4289945+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T14:34:12.4289945+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T14:34:12.4289945+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T14:34:12.4295126+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T14:34:12.4311036+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T14:34:12.4311036+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T14:35:00.0000448+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:35:00.0000448+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:35:00.0028896+03:00","level":"ERROR","msg":"got a zero USD rate, returning shoots without USD price"}
+{"time":"2026-03-09T14:35:00.0028896+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:35:00.2683793+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:38:16.1977779+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T14:38:16.2210696+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T14:38:16.2210696+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T14:38:16.2210696+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T14:38:16.2210696+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T14:38:16.2232816+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T14:38:16.2232816+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T14:39:00.0008593+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:39:00.0008593+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:39:00.0008593+03:00","level":"INFO","msg":"worker received job","worker_id":1}
+{"time":"2026-03-09T14:39:00.0008593+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:39:00.0008593+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:39:00.0028589+03:00","level":"ERROR","msg":"got a zero USD rate, returning shoots without USD price"}
+{"time":"2026-03-09T14:39:00.0028589+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:39:00.0984888+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:39:00.0984888+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:39:00.801731+03:00","level":"INFO","msg":"worker finished job","worker_id":1}
+{"time":"2026-03-09T14:40:00.0012597+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:40:00.0013325+03:00","level":"INFO","msg":"worker received job","worker_id":2}
+{"time":"2026-03-09T14:40:00.0012597+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:40:00.0013325+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:40:00.0013325+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:40:00.0034518+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:40:00.0864847+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:40:00.0864847+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:40:00.1341126+03:00","level":"INFO","msg":"worker finished job","worker_id":2}
+{"time":"2026-03-09T14:40:39.5950075+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T14:40:39.6125333+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T14:40:39.6125333+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T14:40:39.6125333+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T14:40:39.6125333+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T14:40:39.6141143+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T14:40:39.6141143+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T14:41:00.0004621+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:41:00.0004621+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:41:00.0004621+03:00","level":"INFO","msg":"worker received job","worker_id":2}
+{"time":"2026-03-09T14:41:00.0004621+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:41:00.0004621+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:41:00.0037354+03:00","level":"ERROR","msg":"got a zero USD rate, returning shoots without USD price"}
+{"time":"2026-03-09T14:41:00.0037354+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:41:00.1249229+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:41:00.1346622+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:41:00.1346622+03:00","level":"INFO","msg":"worker finished job","worker_id":2}
+{"time":"2026-03-09T14:48:45.7699509+03:00","level":"WARN","msg":"failed to read cache file, starting with empty cache","path":"cache/usd_rate.txt","error":"open cache/usd_rate.txt: The system cannot find the path specified."}
+{"time":"2026-03-09T14:48:46.5169012+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T14:48:46.5174257+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T14:48:46.5174257+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T14:48:46.5174257+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T14:48:46.5174257+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T14:48:46.5190431+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T14:48:46.5190431+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T14:49:00.0000224+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:49:00.0000224+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:49:00.0000224+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:49:00.0000224+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:49:00.0000224+03:00","level":"INFO","msg":"worker received job","worker_id":1}
+{"time":"2026-03-09T14:49:00.002903+03:00","level":"ERROR","msg":"got a zero USD rate, returning shoots without USD price"}
+{"time":"2026-03-09T14:49:00.002903+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:49:00.1588282+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:49:00.1588282+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:49:00.5834274+03:00","level":"INFO","msg":"worker finished job","worker_id":1}
+{"time":"2026-03-09T14:50:00.0003672+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:50:00.0003672+03:00","level":"INFO","msg":"worker received job","worker_id":2}
+{"time":"2026-03-09T14:50:00.0003672+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:50:00.0003672+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:50:00.0003672+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:50:00.0031946+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:50:00.1261108+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:50:00.1266337+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T14:50:00.1388799+03:00","level":"INFO","msg":"worker finished job","worker_id":2}
+{"time":"2026-03-09T14:50:28.1917071+03:00","level":"INFO","msg":"successfully loaded currency rate from cache file","path":"cache/usd_rate.txt","rate":79.15}
+{"time":"2026-03-09T14:50:29.2117988+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T14:50:29.2117988+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T14:50:29.2123233+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T14:50:29.2123233+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T14:50:29.2123233+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T14:50:29.2144181+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T14:50:29.2144181+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T14:51:00.0001222+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:51:00.0001222+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T14:51:00.0001222+03:00","level":"INFO","msg":"worker received job","worker_id":2}
+{"time":"2026-03-09T14:51:00.0001222+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T14:51:00.0001222+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T14:51:00.0031218+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T14:51:00.2141111+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T14:51:00.2141111+03:00","level":"INFO","msg":"worker finished job","worker_id":2}
+{"time":"2026-03-09T14:51:00.4803243+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T15:07:59.9130014+03:00","level":"INFO","msg":"successfully loaded currency rate from cache file","path":"cache/usd_rate.txt","rate":79.15}
+{"time":"2026-03-09T15:08:01.1325984+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T15:08:01.1325984+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T15:08:01.1331218+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T15:08:01.1331218+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T15:08:01.1331218+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T15:08:01.1351924+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T15:08:01.1351924+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T15:09:00.0010947+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T15:09:00.0010947+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T15:09:00.0010947+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T15:09:00.0010947+03:00","level":"INFO","msg":"worker received job","worker_id":1}
+{"time":"2026-03-09T15:09:00.0010947+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T15:09:00.003825+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T15:09:00.1813536+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T15:09:00.1813536+03:00","level":"INFO","msg":"worker finished job","worker_id":3}
+{"time":"2026-03-09T15:09:00.8853519+03:00","level":"INFO","msg":"worker finished job","worker_id":1}
+{"time":"2026-03-09T15:11:12.6433182+03:00","level":"INFO","msg":"successfully loaded currency rate from cache file","path":"cache/usd_rate.txt","rate":79.15}
+{"time":"2026-03-09T15:11:14.8288947+03:00","level":"INFO","msg":"starting cron scheduler"}
+{"time":"2026-03-09T15:11:14.8288947+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T15:11:14.8294154+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T15:11:14.8294154+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T15:11:14.8294154+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T15:11:14.8315012+03:00","level":"INFO","msg":"application is running..."}
+{"time":"2026-03-09T15:11:14.8315012+03:00","level":"INFO","msg":"starting server","address":"0.0.0.0:8080"}
+{"time":"2026-03-09T15:12:00.0003559+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T15:12:00.0003559+03:00","level":"INFO","msg":"submitting job"}
+{"time":"2026-03-09T15:12:00.0004604+03:00","level":"INFO","msg":"worker received job","worker_id":1}
+{"time":"2026-03-09T15:12:00.0004604+03:00","level":"INFO","msg":"worker received job","worker_id":3}
+{"time":"2026-03-09T15:12:00.0004604+03:00","level":"INFO","msg":"starting currency rate update job"}
+{"time":"2026-03-09T15:12:00.0037603+03:00","level":"INFO","msg":"upcoming shoots found for next 48 days","count":1}
+{"time":"2026-03-09T15:12:00.1532207+03:00","level":"INFO","msg":"worker finished job","worker_id":1}
+{"time":"2026-03-09T15:12:00.190102+03:00","level":"INFO","msg":"successfully updated cached currency rate","new_rate":79.15}
+{"time":"2026-03-09T15:12:00.190102+03:00","level":"INFO","msg":"worker finished job","worker_id":3}

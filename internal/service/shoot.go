@@ -61,7 +61,7 @@ func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, cli
 
 	createdShoot, err := s.shootRepo.AddShoot(ctx, shoot, clients)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootCreate, "failed to create shoot")
 	}
 
 	return createdShoot, nil
@@ -70,7 +70,7 @@ func (s *postgresShoot) CreateShoot(ctx context.Context, shoot *model.Shoot, cli
 func (s *postgresShoot) UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error) {
 	_, err := s.shootRepo.GetShootByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootNotFound, "failed to get shoot for update")
 	}
 
 	for _, client := range clients {
@@ -87,7 +87,7 @@ func (s *postgresShoot) UpdateShoot(ctx context.Context, id int, shoot *model.Sh
 
 	updatedShoot, err := s.shootRepo.UpdateShoot(ctx, id, shoot, clients)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootUpdate, "failed to update shoot")
 	}
 
 	return updatedShoot, nil
@@ -96,12 +96,12 @@ func (s *postgresShoot) UpdateShoot(ctx context.Context, id int, shoot *model.Sh
 func (s *postgresShoot) UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error) {
 	_, err := s.shootRepo.GetShootByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootNotFound, "failed to get shoot for date/time update")
 	}
 
 	updatedShoot, err := s.shootRepo.UpdateShootDateTime(ctx, id, patch)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeShootUpdate, "failed to update shoot date/time")
 	}
 
 	return updatedShoot, nil
@@ -131,7 +131,7 @@ func (s *postgresShoot) DeleteShoot(ctx context.Context, id int) error {
 
 	err = s.shootRepo.DeleteShoot(ctx, id)
 	if err != nil {
-		return err
+		return myerrors.Wrap(err, myerrors.ErrCodeShootDelete, "failed to delete shoot")
 	}
 
 	return nil
@@ -140,7 +140,7 @@ func (s *postgresShoot) DeleteShoot(ctx context.Context, id int) error {
 func (s *postgresShoot) GetShoots(ctx context.Context) ([]model.Shoot, error) {
 	shoots, err := s.shootRepo.GetShoots(ctx)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots")
 	}
 
 	return shoots, nil
@@ -149,7 +149,7 @@ func (s *postgresShoot) GetShoots(ctx context.Context) ([]model.Shoot, error) {
 func (s *postgresShoot) GetShootsSortedByDate(ctx context.Context) error {
 	allShoots, err := s.shootRepo.GetShoots(ctx)
 	if err != nil {
-		return err
+		return myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots")
 	}
 
 	sortedByDate := lo.GroupBy(allShoots, func(shoot model.Shoot) time.Time {
@@ -167,7 +167,7 @@ func (s *postgresShoot) GetShootsSortedByDate(ctx context.Context) error {
 func (s *postgresShoot) GetShootsWithRelationshipType(ctx context.Context, relationshipType string) error {
 	allShoots, err := s.shootRepo.GetShoots(ctx)
 	if err != nil {
-		return err
+		return myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots")
 	}
 
 	filteredShoots := lo.Filter(allShoots, func(shoot model.Shoot, _ int) bool {
@@ -234,7 +234,7 @@ func (s *postgresShoot) GetShootsForNextTwoDays(ctx context.Context) ([]model.Sh
 	twoDaysLater := now.Add(48 * time.Hour)
 	shoots, err := s.shootRepo.GetShootsByTimeRange(ctx, now, twoDaysLater)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots for next two days")
 	}
 	return s.enrichShootsWithUSDPrice(ctx, shoots)
 }
@@ -244,7 +244,7 @@ func (s *postgresShoot) GetShootsForNextTwoHours(ctx context.Context) ([]model.S
 	twoHoursLater := now.Add(2 * time.Hour)
 	shoots, err := s.shootRepo.GetShootsByTimeRange(ctx, now, twoHoursLater)
 	if err != nil {
-		return nil, err
+		return nil, myerrors.Wrap(err, myerrors.ErrCodeDBSelect, "failed to get shoots for next two hours")
 	}
 	return s.enrichShootsWithUSDPrice(ctx, shoots)
 }
