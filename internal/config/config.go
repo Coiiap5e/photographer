@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig
-	DB     DbConfig
+	Server   ServerConfig
+	DB       DbConfig
+	Telegram TelegramConfig
 }
 
 type ServerConfig struct {
@@ -28,6 +29,11 @@ type DbConfig struct {
 	Username string
 	Password string
 	Database string
+}
+
+type TelegramConfig struct {
+	BotToken  string
+	ChannelID string
 }
 
 type PoolConfig struct {
@@ -96,9 +102,15 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	telegramConfig, err := loadTelegramConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
-		Server: serverConfig,
-		DB:     *dbConfig,
+		Server:   serverConfig,
+		DB:       *dbConfig,
+		Telegram: *telegramConfig,
 	}, nil
 }
 
@@ -169,6 +181,24 @@ func loadDBConfig() (*DbConfig, error) {
 		Database: os.Getenv("APP_DB_NAME"),
 	}, nil
 }
+
+func loadTelegramConfig() (*TelegramConfig, error) {
+	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if botToken == "" {
+		return nil, errors.New(errors.ErrCodeConfig, "TELEGRAM_BOT_TOKEN is required")
+	}
+
+	channelID := os.Getenv("TELEGRAM_CHANNEL_ID")
+	if channelID == "" {
+		return nil, errors.New(errors.ErrCodeConfig, "TELEGRAM_CHANNEL_ID is required")
+	}
+
+	return &TelegramConfig{
+		BotToken:  botToken,
+		ChannelID: channelID,
+	}, nil
+}
+
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {

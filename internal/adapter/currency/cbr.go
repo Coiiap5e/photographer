@@ -12,6 +12,22 @@ import (
 
 const cbrURL = "https://www.cbr-xml-daily.ru/daily_json.js"
 
+type Service interface {
+	GetUSDRate(ctx context.Context) (float64, error)
+}
+
+type cbrService struct {
+	client *http.Client
+	url    string
+}
+
+func NewService() Service {
+	return &cbrService{
+		client: &http.Client{Timeout: 10 * time.Second},
+		url:    cbrURL,
+	}
+}
+
 type CBRResponse struct {
 	Currencies map[string]Currency `json:"Valute"`
 }
@@ -26,16 +42,14 @@ type Currency struct {
 	Previous float64 `json:"Previous"`
 }
 
-// It returns the value of 1 USD in RUB.
-
-func GetUSDRate(ctx context.Context) (float64, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
-	req, err := http.NewRequestWithContext(ctx, "GET", cbrURL, nil)
+// GetUSDRate returns the value of 1 USD in RUB.
+func (s *cbrService) GetUSDRate(ctx context.Context) (float64, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", s.url, nil)
 	if err != nil {
 		return 0, errors.Wrap(err, errors.ErrCodeCurrencyAPIRequest, "failed to create HTTP request for CBR API")
 	}
 
-	resp, err := client.Do(req)
+	resp, err := s.client.Do(req)
 	if err != nil {
 		return 0, errors.Wrap(err, errors.ErrCodeCurrencyAPIRequest, "failed to execute HTTP request to CBR API")
 	}

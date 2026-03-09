@@ -44,9 +44,15 @@ const (
 	ErrCodeCurrencyAPIParsing  ErrorCode = "CURRENCY_API_PARSING_ERROR"
 	ErrCodeCurrencyNotFound    ErrorCode = "CURRENCY_NOT_FOUND"
 
+	ErrCodeTelegramBotInit ErrorCode = "TELEGRAM_BOT_INIT_ERROR"
+	ErrCodeTelegramBotSend ErrorCode = "TELEGRAM_BOT_SEND_ERROR"
+
 	//Configuration
 
 	ErrCodeConfig ErrorCode = "CONFIG_ERROR"
+
+	// Jobs
+	ErrCodeJobError ErrorCode = "JOB_ERROR"
 )
 
 type AppError struct {

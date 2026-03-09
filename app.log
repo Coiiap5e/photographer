@@ -21,3 +21,14 @@
 {"time":"2026-01-22T22:07:59.1713759+03:00","level":"INFO","msg":"today's shoots count","count":0}
 {"time":"2026-01-22T22:08:59.1704851+03:00","level":"INFO","msg":"today's shoots count","count":0}
 {"time":"2026-01-22T22:09:59.1710621+03:00","level":"INFO","msg":"today's shoots count","count":0}
+{"time":"2026-03-09T12:41:20.3586869+03:00","level":"INFO","msg":"starting worker pool","workers":3}
+{"time":"2026-03-09T12:41:20.360248+03:00","level":"INFO","msg":"worker started","worker_id":3}
+{"time":"2026-03-09T12:41:20.360248+03:00","level":"INFO","msg":"worker started","worker_id":1}
+{"time":"2026-03-09T12:41:20.360248+03:00","level":"INFO","msg":"worker started","worker_id":2}
+{"time":"2026-03-09T12:41:20.3827147+03:00","level":"INFO","msg":"No upcoming shoots in the next 2 hours."}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"stopping cron scheduler"}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"stopping worker pool"}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker stopped","worker_id":3}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker stopped","worker_id":2}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker stopped","worker_id":1}
+{"time":"2026-03-09T12:41:20.5104833+03:00","level":"INFO","msg":"worker pool stopped"}

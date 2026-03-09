@@ -11,6 +11,7 @@ type Shoot struct {
 	ShootLocation string
 	ShootType     string
 	Notes         string
+	PriceUSD      float64
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 

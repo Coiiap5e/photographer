@@ -7,9 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Coiiap5e/photographer/internal/adapter/currency"
 	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	myerrors "github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/samber/lo"
 )
 
@@ -22,20 +24,25 @@ type Shoot interface {
 	GetShootsSortedByDate(ctx context.Context) error
 	UpdateShoot(ctx context.Context, id int, shoot *model.Shoot, clients []*model.ShootClient) (*model.Shoot, error)
 	UpdateShootDateTime(ctx context.Context, id int, patch *model.ShootDateTimePatch) (*model.Shoot, error)
-	GetShootsCountByDate(ctx context.Context, date time.Time) (int, error)
+	GetShootsForNextTwoDays(ctx context.Context) ([]model.Shoot, error)
+	GetShootsForNextTwoHours(ctx context.Context) ([]model.Shoot, error)
 }
 
 type postgresShoot struct {
-	shootRepo     repository.Shoot
-	clientService Client
-	logger        *slog.Logger
+	shootRepo       repository.Shoot
+	clientService   Client
+	currencyService currency.Service
+	logger          *slog.Logger
+	clock           *clock.Clock
 }
 
-func NewShoot(shootRepo repository.Shoot, clientService Client, logger *slog.Logger) Shoot {
+func NewShoot(shootRepo repository.Shoot, clientService Client, currencyService currency.Service, logger *slog.Logger, clock *clock.Clock) Shoot {
 	return &postgresShoot{
-		shootRepo:     shootRepo,
-		clientService: clientService,
-		logger:        logger,
+		shootRepo:       shootRepo,
+		clientService:   clientService,
+		currencyService: currencyService,
+		logger:          logger,
+		clock:           clock,
 	}
 }
 
@@ -222,6 +229,45 @@ func showShoots(shoots []model.Shoot) {
 
 }
 
-func (s *postgresShoot) GetShootsCountByDate(ctx context.Context, date time.Time) (int, error) {
-	return s.shootRepo.CountByDate(ctx, date)
+func (s *postgresShoot) GetShootsForNextTwoDays(ctx context.Context) ([]model.Shoot, error) {
+	now := s.clock.Now()
+	twoDaysLater := now.Add(48 * time.Hour)
+	shoots, err := s.shootRepo.GetShootsByTimeRange(ctx, now, twoDaysLater)
+	if err != nil {
+		return nil, err
+	}
+	return s.enrichShootsWithUSDPrice(ctx, shoots)
+}
+
+func (s *postgresShoot) GetShootsForNextTwoHours(ctx context.Context) ([]model.Shoot, error) {
+	now := s.clock.Now()
+	twoHoursLater := now.Add(2 * time.Hour)
+	shoots, err := s.shootRepo.GetShootsByTimeRange(ctx, now, twoHoursLater)
+	if err != nil {
+		return nil, err
+	}
+	return s.enrichShootsWithUSDPrice(ctx, shoots)
+}
+
+func (s *postgresShoot) enrichShootsWithUSDPrice(ctx context.Context, shoots []model.Shoot) ([]model.Shoot, error) {
+	if len(shoots) == 0 {
+		return shoots, nil
+	}
+
+	rate, err := s.currencyService.GetUSDRate(ctx)
+	if err != nil {
+		s.logger.Error("failed to get USD rate, returning shoots without USD price", "error", err)
+		return shoots, nil
+	}
+
+	if rate == 0 {
+		s.logger.Error("got a zero USD rate, returning shoots without USD price")
+		return shoots, nil
+	}
+
+	for i := range shoots {
+		shoots[i].PriceUSD = float64(shoots[i].ShootPrice) / rate
+	}
+
+	return shoots, nil
 }
