@@ -1,4 +1,4 @@
-BINARY_NAME = algorithms
+BINARY_NAME = photographer
 TARGET_DIR =  bin # имя папки для бинарников
 SRC_MAIN = main.go # имя файла с главной функцией
 .DEFAULT_GOAL := run

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/Coiiap5e/photographer/internal/adapter/currency"
-	"github.com/Coiiap5e/photographer/internal/adapter/notifier"
+	"github.com/Coiiap5e/photographer/internal/adapter/kafka"
 	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/api/controllers"
 	"github.com/Coiiap5e/photographer/internal/app"
@@ -90,12 +90,8 @@ func NewContainer(ctx context.Context) (*Container, error) {
 		Shoot:  shootService,
 	}
 
-	telegramNotifier, err := notifier.NewTelegramNotifier(cfg.Telegram.BotToken, cfg.Telegram.ChannelID)
-	if err != nil {
-		container.closeLogger()
-		return nil, errors.Wrap(err, errors.ErrCodeTelegramBotInit, "error create telegram notifier")
-	}
-	container.Notifier = telegramNotifier
+	kafkaProducer := kafka.NewKafkaProducer(cfg.Kafka.BrokerURLs, cfg.Kafka.NotificationTopic, container.Logger)
+	container.Notifier = kafkaProducer
 
 	clientController := controllers.NewClientController(container.Services.Client)
 	shootController := controllers.NewShootController(container.Services.Shoot, container.Services.Client, container.Clock)
@@ -121,6 +117,14 @@ func NewContainer(ctx context.Context) (*Container, error) {
 
 func (c *Container) Close() {
 	c.DB.Close()
+
+	if c.Notifier != nil {
+		if kp, ok := c.Notifier.(*kafka.KafkaProducer); ok {
+			if err := kp.Close(); err != nil {
+				c.Logger.Error("error closing KafkaProducer", "error", err)
+			}
+		}
+	}
 
 	if c.closeLogger != nil {
 		c.closeLogger()

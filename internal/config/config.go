@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Coiiap5e/photographer/internal/errors"
@@ -12,7 +13,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	DB       DbConfig
-	Telegram TelegramConfig
+	Kafka KafkaConfig
 }
 
 type ServerConfig struct {
@@ -31,10 +32,11 @@ type DbConfig struct {
 	Database string
 }
 
-type TelegramConfig struct {
-	BotToken  string
-	ChannelID string
+type KafkaConfig struct {
+	BrokerURLs        []string
+	NotificationTopic string
 }
+
 
 type PoolConfig struct {
 	MaxOpenConns    int
@@ -102,15 +104,15 @@ func Load() (*Config, error) {
 		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load server config")
 	}
 
-	telegramConfig, err := loadTelegramConfig()
+	kafkaConfig, err := loadKafkaConfig()
 	if err != nil {
-		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load telegram config")
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load kafka config")
 	}
 
 	return &Config{
 		Server:   serverConfig,
 		DB:       *dbConfig,
-		Telegram: *telegramConfig,
+		Kafka:    *kafkaConfig,
 	}, nil
 }
 
@@ -182,20 +184,22 @@ func loadDBConfig() (*DbConfig, error) {
 	}, nil
 }
 
-func loadTelegramConfig() (*TelegramConfig, error) {
-	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if botToken == "" {
-		return nil, errors.New(errors.ErrCodeConfig, "TELEGRAM_BOT_TOKEN is required")
+
+func loadKafkaConfig() (*KafkaConfig, error) {
+	brokerURLsStr := os.Getenv("KAFKA_BROKER_URLS")
+	if brokerURLsStr == "" {
+		return nil, errors.New(errors.ErrCodeConfig, "KAFKA_BROKER_URLS is required")
+	}
+	brokerURLs := strings.Split(brokerURLsStr, ",")
+
+	notificationTopic := os.Getenv("KAFKA_NOTIFICATION_TOPIC")
+	if notificationTopic == "" {
+		return nil, errors.New(errors.ErrCodeConfig, "KAFKA_NOTIFICATION_TOPIC is required")
 	}
 
-	channelID := os.Getenv("TELEGRAM_CHANNEL_ID")
-	if channelID == "" {
-		return nil, errors.New(errors.ErrCodeConfig, "TELEGRAM_CHANNEL_ID is required")
-	}
-
-	return &TelegramConfig{
-		BotToken:  botToken,
-		ChannelID: channelID,
+	return &KafkaConfig{
+		BrokerURLs:        brokerURLs,
+		NotificationTopic: notificationTopic,
 	}, nil
 }
 

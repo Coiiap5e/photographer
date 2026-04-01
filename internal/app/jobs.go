@@ -18,12 +18,15 @@ type NotifyShootsJob struct {
 	logger       *slog.Logger
 	window       time.Duration
 	timeUnit     string
+	displayValue float64
 }
 
 func NewNotifyShootsJob(shootService service.Shoot, notifier service.Notifier, logger *slog.Logger, window time.Duration) *NotifyShootsJob {
 	unit := "hours"
+	displayValue := window.Hours()
 	if window > 24*time.Hour {
 		unit = "days"
+		displayValue = window.Hours() / 24
 	}
 	return &NotifyShootsJob{
 		shootService: shootService,
@@ -31,6 +34,7 @@ func NewNotifyShootsJob(shootService service.Shoot, notifier service.Notifier, l
 		logger:       logger,
 		window:       window,
 		timeUnit:     unit,
+		displayValue: displayValue,
 	}
 }
 
@@ -57,7 +61,7 @@ func (j *NotifyShootsJob) Execute() {
 	}
 
 	if len(shoots) == 0 {
-		message := fmt.Sprintf("No upcoming shoots in the next %.0f %s.", j.window.Hours(), j.timeUnit)
+		message := fmt.Sprintf("No upcoming shoots in the next %.0f %s.", j.displayValue, j.timeUnit)
 		j.logger.Info(message)
 		if err := j.notifier.NotifyMessage(message); err != nil {
 			j.logger.Error("failed to send notification", "error", err)

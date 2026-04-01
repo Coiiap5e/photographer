@@ -51,7 +51,7 @@ func (s *Scheduler) Start() {
 	s.logger.Info("starting cron scheduler")
 
 	// Schedule shoot notifications
-	_, err := s.cron.AddFunc("0 9 * * *", func() {
+	_, err := s.cron.AddFunc("* * * * *", func() { // Every minute for testing
 		job := NewNotifyShootsJob(s.shootService, s.notifier, s.logger, 48*time.Hour)
 		s.pool.Submit(job)
 	})
@@ -60,7 +60,7 @@ func (s *Scheduler) Start() {
 		return
 	}
 
-	_, err = s.cron.AddFunc("0 * * * *", func() {
+	_, err = s.cron.AddFunc("* * * * *", func() { // Every minute for testing
 		job := NewNotifyShootsJob(s.shootService, s.notifier, s.logger, 2*time.Hour)
 		s.pool.Submit(job)
 	})

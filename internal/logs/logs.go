@@ -15,7 +15,9 @@ func InitLogger() (*slog.Logger, func()) {
 		return logger, func() {}
 	}
 
-	logger := slog.New(slog.NewJSONHandler(logFile, nil))
+	logger := slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{
+		AddSource: true, // Добавляет информацию об источнике (файл, строка) к каждому логу
+	}))
 	return logger, func() {
 		err = logFile.Close()
 		if err != nil {
