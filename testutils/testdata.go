@@ -3,11 +3,12 @@ package testutils
 import (
 	"time"
 
-	model2 "github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 )
 
-func CreateTestClient() *model2.Client {
-	return &model2.Client{
+func CreateTestClient() *model.Client {
+	return &model.Client{
 		FirstName:        "Ivan",
 		LastName:         "Ivanov",
 		Phone:            "+7(900)000-00-00",
@@ -15,7 +16,17 @@ func CreateTestClient() *model2.Client {
 	}
 }
 
-func CreateTestClientWithOptions(option ...func(client *model2.Client)) *model2.Client {
+func CreateTestShootClients(id int) []*model.ShootClient {
+	return []*model.ShootClient{
+		{
+			ClientID:         id,
+			IsMainClient:     true,
+			RelationshipType: "Main",
+		},
+	}
+}
+
+func CreateTestClientWithOptions(option ...func(client *model.Client)) *model.Client {
 	client := CreateTestClient()
 	for _, opt := range option {
 		opt(client)
@@ -23,12 +34,13 @@ func CreateTestClientWithOptions(option ...func(client *model2.Client)) *model2.
 	return client
 }
 
-func CreateTestShoot(clientID int) *model2.Shoot {
-	return &model2.Shoot{
-		ClientId:      clientID,
-		ShootDate:     time.Now().AddDate(0, 0, 30),
-		StartTime:     time.Date(0, 0, 0, 15, 0, 0, 0, time.UTC),
-		EndTime:       time.Date(0, 0, 0, 16, 0, 0, 0, time.UTC),
+func CreateTestShoot(clientID int, baseDate *clock.Clock) *model.Shoot {
+	//TODO: доработать тест после многие ко многим (использовать id)
+	baseTime := baseDate.Now()
+	return &model.Shoot{
+		ShootDate:     baseTime,
+		StartTime:     baseTime.Add(15 * time.Hour),
+		EndTime:       baseTime.Add(16 * time.Hour),
 		ShootPrice:    1000,
 		ShootLocation: "Pushkin blvd",
 		ShootType:     "love story",
@@ -37,8 +49,8 @@ func CreateTestShoot(clientID int) *model2.Shoot {
 
 }
 
-func CreateTestShootWithOptions(clientID int, option ...func(shoot *model2.Shoot)) *model2.Shoot {
-	shoot := CreateTestShoot(clientID)
+func CreateTestShootWithOptions(clientID int, baseDate *clock.Clock, option ...func(shoot *model.Shoot)) *model.Shoot {
+	shoot := CreateTestShoot(clientID, baseDate)
 	for _, opt := range option {
 		opt(shoot)
 	}

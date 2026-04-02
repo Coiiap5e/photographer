@@ -2,57 +2,100 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	cliapp "github.com/Coiiap5e/photographer/internal/app"
-	"github.com/Coiiap5e/photographer/internal/config"
-	"github.com/Coiiap5e/photographer/internal/database"
-	"github.com/Coiiap5e/photographer/internal/repository"
-	"github.com/Coiiap5e/photographer/internal/service"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/Coiiap5e/photographer/internal/api"
+	"github.com/Coiiap5e/photographer/internal/api/middleware"
+	"github.com/Coiiap5e/photographer/internal/app/di"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	log.SetFlags(log.Ldate)
-	log.SetOutput(os.Stdout)
-
-	signalChan := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-	dbConfig, err := config.LoadDBConfig()
+	container, err := di.NewContainer(ctx)
 	if err != nil {
-		log.Fatal("configuration error: ", err)
+		log.Fatal("failed to create DI container:", err)
 	}
+	defer container.Close()
 
-	db, err := database.NewClient(ctx, dbConfig)
-	if err != nil {
-		log.Fatal(err)
+	g, gCtx := errgroup.WithContext(ctx)
+
+	container.Scheduler.Start()
+
+	g.Go(func() error {
+		<-gCtx.Done()
+		container.Scheduler.Stop()
+		container.Logger.Info("scheduler stopped")
+		return nil
+	})
+
+	g.Go(func() error {
+		return container.WorkerPool.Run(gCtx)
+	})
+
+	server := setupServer(container)
+	g.Go(func() error {
+		container.Logger.Info("starting server", "address", server.Addr)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			container.Logger.Error("failed to start server", "error", err)
+			return err
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		<-gCtx.Done()
+		container.Logger.Info("shutting down server...")
+
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			container.Logger.Error("server shutdown failed", "error", err)
+			return err
+		}
+
+		container.Logger.Info("server stopped gracefully")
+		return nil
+	})
+
+	container.Logger.Info("application is running...")
+	if err := g.Wait(); err != nil {
+		container.Logger.Error("application finished with an error", "error", err)
+	} else {
+		container.Logger.Info("application finished gracefully")
 	}
-	defer db.Close()
+}
 
-	clientRepo := repository.NewClient(db)
-	shootRepo := repository.NewShoot(db)
+func setupServer(container *di.Container) *http.Server {
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(middleware.Logger(container.Logger))
+	router.Use(middleware.ErrorHandler())
 
-	clientService := service.NewClient(clientRepo)
-	shootService := service.NewShoot(shootRepo, clientRepo)
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "OK"})
+	})
 
-	go func() {
-		sig := <-signalChan
-		log.Println("got signal:", sig)
+	apiGroup := router.Group("/api")
+	api.SetupShootRoutes(apiGroup, container.Controllers.Shoot)
+	api.SetupClientRoutes(apiGroup, container.Controllers.Client)
 
-		done <- true
-	}()
-
-	app := cliapp.NewApp(clientService, shootService)
-	go func() {
-		app.RunMenu(ctx)
-		done <- true
-	}()
-
-	<-done
+	addr := fmt.Sprintf("%s:%d", container.Config.Server.Host, container.Config.Server.Port)
+	return &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
 }

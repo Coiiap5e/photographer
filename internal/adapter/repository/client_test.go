@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/Coiiap5e/photographer/internal/model"
+	"github.com/Coiiap5e/photographer/internal/utils/clock"
 	"github.com/Coiiap5e/photographer/testutils"
 	"github.com/stretchr/testify/suite"
 )
@@ -16,22 +18,28 @@ func TestClientRepositoryTestSuit(t *testing.T) {
 
 type ClientRepositoryTestSuit struct {
 	suite.Suite
-	ctx  context.Context
-	db   *testutils.TestDB
-	repo Client
+	ctx    context.Context
+	db     *testutils.TestDB
+	repo   Client
+	logger *slog.Logger
+	clock  *clock.Clock
 }
 
 func (suite *ClientRepositoryTestSuit) SetupSuite() {
 	suite.ctx = context.Background()
 
+	suite.clock = clock.NewInMoscow()
+
+	suite.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	var err error
 
-	suite.db, err = testutils.CreateTestDB(suite.ctx)
+	suite.db, err = testutils.CreateTestDB(suite.ctx, suite.logger)
 	suite.Require().NoError(err, "Failed to setup test database")
 	suite.Require().NotNil(suite.db, "TestDB should not be nil")
 	suite.Require().NotNil(suite.db.GetDB(), "DB connection should not be nil")
 
-	suite.repo = NewClient(suite.db.GetDB())
+	suite.repo = NewClient(suite.db.GetDB(), suite.clock)
 }
 
 func (suite *ClientRepositoryTestSuit) SetupTest() {
@@ -42,7 +50,8 @@ func (suite *ClientRepositoryTestSuit) SetupTest() {
 func (suite *ClientRepositoryTestSuit) TearDownSuite() {
 	if suite.db != nil {
 		if err := suite.db.Cleanup(suite.ctx); err != nil {
-			log.Fatalf("failed to cleanup test database: %v", err)
+			suite.logger.Error("failed to cleanup test database", "error", err)
+			os.Exit(1)
 		}
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Coiiap5e/photographer/internal/database"
 	"github.com/Coiiap5e/photographer/internal/errors"
+	"github.com/Coiiap5e/photographer/internal/infrastructure/database"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -89,14 +89,11 @@ func (tdb *TestDB) InitSchema(ctx context.Context) error {
 	_, err = tdb.Pool.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS shoots (
 			id SERIAL PRIMARY KEY,
-			client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
 			date DATE NOT NULL,
-			start_time TIME,
-			end_time TIME,
+			start_time TIME NOT NULL,
+			end_time TIME NOT NULL,
 			shoot_price DECIMAL(10,0),
 			location VARCHAR(255),
-			client_first_name VARCHAR(255),
-			client_last_name VARCHAR(255),
 			shoot_type VARCHAR(100),
 			notes TEXT,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -104,6 +101,21 @@ func (tdb *TestDB) InitSchema(ctx context.Context) error {
 	`)
 	if err != nil {
 		return errors.Wrap(err, errors.ErrCodeShootCreate, "failed to create shoots table")
+	}
+
+	_, err = tdb.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS shoot_clients (
+			shoot_id INTEGER REFERENCES shoots(id) ON DELETE CASCADE,
+			client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+			is_main_client BOOLEAN DEFAULT false,
+			relationship_type VARCHAR(50) NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (shoot_id, client_id)
+		)
+	`)
+
+	if err != nil {
+		return errors.Wrap(err, errors.ErrCodeShootCreate, "failed to create shoot client table")
 	}
 
 	return nil

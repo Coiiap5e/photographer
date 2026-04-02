@@ -3,16 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
+	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
-	"github.com/Coiiap5e/photographer/internal/repository"
 	"github.com/Coiiap5e/photographer/internal/utils"
 )
 
 type Client interface {
-	CreateClient(ctx context.Context, client *model.Client) error
+	CreateClient(ctx context.Context, client *model.Client) (*model.Client, error)
 	DeleteClient(ctx context.Context, id int) error
 	GetClients(ctx context.Context) error
 	GetClientByID(ctx context.Context, id int) (*model.Client, error)
@@ -20,19 +21,23 @@ type Client interface {
 
 type postgresClient struct {
 	clientRepo repository.Client
+	logger     *slog.Logger
 }
 
-func NewClient(clientRepo repository.Client) Client {
-	return &postgresClient{clientRepo: clientRepo}
-}
-
-func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) error {
-	err := c.clientRepo.AddClient(ctx, client)
+func (c *postgresClient) CreateClient(ctx context.Context, client *model.Client) (*model.Client, error) {
+	client, err := c.clientRepo.AddClient(ctx, client)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, errors.ErrCodeClientCreate, "failed to create client")
 	}
 
-	return nil
+	return client, nil
+}
+
+func NewClient(clientRepo repository.Client, logger *slog.Logger) Client {
+	return &postgresClient{
+		clientRepo: clientRepo,
+		logger:     logger,
+	}
 }
 
 func (c *postgresClient) GetClientByID(ctx context.Context, id int) (*model.Client, error) {
@@ -61,7 +66,7 @@ func (c *postgresClient) DeleteClient(ctx context.Context, id int) error {
 
 	err := c.clientRepo.DeleteClient(ctx, id)
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.ErrCodeClientDelete, "failed to delete client")
 	}
 
 	return nil
@@ -70,7 +75,7 @@ func (c *postgresClient) DeleteClient(ctx context.Context, id int) error {
 func (c *postgresClient) GetClients(ctx context.Context) error {
 	clients, err := c.clientRepo.GetClients(ctx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.ErrCodeDBSelect, "failed to get clients")
 	}
 
 	showClients(clients)
