@@ -46,7 +46,10 @@ const (
 
 	ErrCodeKafkaProduce ErrorCode = "KAFKA_SEND_MSG_ERROR"
 
-	//Configuration
+	// General errors
+	ErrCodeInternal ErrorCode = "INTERNAL_ERROR"
+
+	// Configuration
 
 	ErrCodeConfig ErrorCode = "CONFIG_ERROR"
 

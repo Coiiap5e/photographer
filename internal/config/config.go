@@ -11,9 +11,10 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	DB       DbConfig
-	Kafka KafkaConfig
+	Server  ServerConfig
+	DB      DbConfig
+	Kafka   KafkaConfig
+	Metrics MetricsConfig
 }
 
 type ServerConfig struct {
@@ -37,6 +38,10 @@ type KafkaConfig struct {
 	NotificationTopic string
 }
 
+type MetricsConfig struct {
+	FilePath       string
+	ExportInterval time.Duration
+}
 
 type PoolConfig struct {
 	MaxOpenConns    int
@@ -109,10 +114,31 @@ func Load() (*Config, error) {
 		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load kafka config")
 	}
 
+	metricsConfig, err := loadMetricsConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, errors.ErrCodeConfig, "failed to load metrics config")
+	}
+
 	return &Config{
-		Server:   serverConfig,
-		DB:       *dbConfig,
-		Kafka:    *kafkaConfig,
+		Server:  serverConfig,
+		DB:      *dbConfig,
+		Kafka:   *kafkaConfig,
+		Metrics: *metricsConfig,
+	}, nil
+}
+
+func loadMetricsConfig() (*MetricsConfig, error) {
+	filePath := getEnv("METRICS_FILE_PATH", "metrics.log")
+	exportIntervalStr := getEnv("METRICS_EXPORT_INTERVAL_SECONDS", "10")
+
+	exportIntervalSeconds, err := strconv.Atoi(exportIntervalStr)
+	if err != nil {
+		return nil, errors.New(errors.ErrCodeConfig, "invalid METRICS_EXPORT_INTERVAL_SECONDS")
+	}
+
+	return &MetricsConfig{
+		FilePath:       filePath,
+		ExportInterval: time.Duration(exportIntervalSeconds) * time.Second,
 	}, nil
 }
 
@@ -184,7 +210,6 @@ func loadDBConfig() (*DbConfig, error) {
 	}, nil
 }
 
-
 func loadKafkaConfig() (*KafkaConfig, error) {
 	brokerURLsStr := os.Getenv("KAFKA_BROKER_URLS")
 	if brokerURLsStr == "" {
@@ -202,7 +227,6 @@ func loadKafkaConfig() (*KafkaConfig, error) {
 		NotificationTopic: notificationTopic,
 	}, nil
 }
-
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {

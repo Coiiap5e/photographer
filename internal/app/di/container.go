@@ -4,8 +4,12 @@ import (
 	"context"
 	"log/slog"
 
+	"go.opentelemetry.io/otel/metric"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+
 	"github.com/Coiiap5e/photographer/internal/adapter/currency"
 	"github.com/Coiiap5e/photographer/internal/adapter/kafka"
+	"github.com/Coiiap5e/photographer/internal/adapter/metrics"
 	"github.com/Coiiap5e/photographer/internal/adapter/repository"
 	"github.com/Coiiap5e/photographer/internal/api/controllers"
 	"github.com/Coiiap5e/photographer/internal/app"
@@ -23,6 +27,7 @@ type Container struct {
 	DB                    *database.DB
 	Clock                 *clock.Clock
 	Logger                *slog.Logger
+	Meter                 metric.Meter
 	Services              *Services
 	Repositories          *Repositories
 	Controllers           *Controllers
@@ -31,8 +36,10 @@ type Container struct {
 	RealCurrencyService   currency.Service
 	CachedCurrencyService *currency.InMemoryCacheService
 	Notifier              service.Notifier
+	fileExporter          *metrics.FileExporter
 
-	closeLogger func()
+	closeLogger        func()
+	closeMeterProvider func()
 }
 
 type Services struct {
@@ -64,6 +71,22 @@ func NewContainer(ctx context.Context) (*Container, error) {
 	}
 	container.Config = cfg
 
+	fileExporter, err := metrics.NewFileExporter(cfg.Metrics.FilePath, container.Logger)
+	if err != nil {
+		container.closeLogger()
+		return nil, errors.Wrap(err, errors.ErrCodeInternal, "failed to create file exporter for metrics")
+	}
+	container.fileExporter = fileExporter
+
+	reader := sdkmetric.NewPeriodicReader(fileExporter, sdkmetric.WithInterval(cfg.Metrics.ExportInterval))
+	mp := sdkmetric.NewMeterProvider(sdkmetric.WithReader(reader))
+	container.Meter = mp.Meter("photographer-app")
+	container.closeMeterProvider = func() {
+		if err := mp.Shutdown(ctx); err != nil {
+			container.Logger.Error("error shutting down MeterProvider", "error", err)
+		}
+	}
+
 	db, err := database.NewClient(ctx, cfg.DB)
 	if err != nil {
 		container.closeLogger()
@@ -90,7 +113,12 @@ func NewContainer(ctx context.Context) (*Container, error) {
 		Shoot:  shootService,
 	}
 
-	kafkaProducer := kafka.NewKafkaProducer(cfg.Kafka.BrokerURLs, cfg.Kafka.NotificationTopic, container.Logger)
+	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka.BrokerURLs, cfg.Kafka.NotificationTopic, container.Logger, container.Meter)
+	if err != nil {
+		container.closeLogger()
+		return nil, errors.Wrap(err, errors.ErrCodeKafkaProduce, "failed to create kafka producer")
+	}
+
 	container.Notifier = kafkaProducer
 
 	clientController := controllers.NewClientController(container.Services.Client)
@@ -128,5 +156,9 @@ func (c *Container) Close() {
 
 	if c.closeLogger != nil {
 		c.closeLogger()
+	}
+
+	if c.closeMeterProvider != nil {
+		c.closeMeterProvider()
 	}
 }

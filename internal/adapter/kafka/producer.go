@@ -6,17 +6,22 @@ import (
 	"log/slog"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+
 	"github.com/Coiiap5e/photographer/internal/errors"
 	"github.com/Coiiap5e/photographer/internal/model"
 	"github.com/segmentio/kafka-go"
 )
 
 type KafkaProducer struct {
-	writer *kafka.Writer
-	logger *slog.Logger
+	writer                   *kafka.Writer
+	logger                   *slog.Logger
+	meter                    metric.Meter
+	kafkaMessagesSentCounter metric.Int64Counter
 }
 
-func NewKafkaProducer(brokerURLs []string, topic string, logger *slog.Logger) *KafkaProducer {
+func NewKafkaProducer(brokerURLs []string, topic string, logger *slog.Logger, meter metric.Meter) (*KafkaProducer, error) {
 	writer := kafka.NewWriter(kafka.WriterConfig{
 		Brokers:      brokerURLs,
 		Topic:        topic,
@@ -27,10 +32,24 @@ func NewKafkaProducer(brokerURLs []string, topic string, logger *slog.Logger) *K
 		ErrorLogger:  kafka.LoggerFunc(logger.Error),
 	})
 
-	return &KafkaProducer{
+	producer := &KafkaProducer{
 		writer: writer,
 		logger: logger,
+		meter:  meter,
 	}
+
+	kafkaMessagesSentCounter, err := meter.Int64Counter(
+		"kafka_messages_sent_total",
+		metric.WithDescription("Total number of messages sent to Kafka"),
+		metric.WithUnit("1"),
+	)
+	if err != nil {
+		logger.Error("failed to create Kafka messages sent counter", "error", err)
+		return nil, errors.Wrap(err, errors.ErrCodeKafkaProduce, "failed to create Kafka messages sent counter")
+	}
+	producer.kafkaMessagesSentCounter = kafkaMessagesSentCounter
+
+	return producer, nil
 }
 
 func (p *KafkaProducer) Notify(shoot model.Shoot) error {
@@ -53,7 +72,8 @@ func (p *KafkaProducer) Notify(shoot model.Shoot) error {
 		return errors.Wrap(err, errors.ErrCodeKafkaProduce, "failed to send shoot notification to Kafka")
 	}
 
-	p.logger.Info("shoot notification successfully sent to Kafka", "shoot_id", shoot.Id, "topic", p.writer.Topic)
+	p.kafkaMessagesSentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("topic", p.writer.Topic), attribute.String("message_type", "shoot_notification")))
+	p.logger.Info("shoot notification successfully sent to Kafka", "shoot_id", shoot.Id, "topic", p.writer.Topic, "metric_count", 1)
 	return nil
 }
 
@@ -71,7 +91,8 @@ func (p *KafkaProducer) NotifyMessage(message string) error {
 		return errors.Wrap(err, errors.ErrCodeKafkaProduce, "failed to send text notification to Kafka")
 	}
 
-	p.logger.Info("text notification successfully sent to Kafka", "message", message, "topic", p.writer.Topic)
+	p.kafkaMessagesSentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("topic", p.writer.Topic), attribute.String("message_type", "general_message")))
+	p.logger.Info("text notification successfully sent to Kafka", "message", message, "topic", p.writer.Topic, "metric_count", 1)
 	return nil
 }
 
